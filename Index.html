@@ -1,42 +1,280 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Veteran Verify</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Veteran Verify — Trusted Veteran Verification</title>
+
+  <!-- SEO / Social -->
+  <meta name="description" content="Veteran Verify is a trusted platform for veteran verification—built to simplify discounts, benefits, and community connections for veterans and vendors." />
+  <link rel="canonical" href="https://veteranverify.net/" />
+  <meta property="og:title" content="Veteran Verify — Trusted Veteran Verification" />
+  <meta property="og:description" content="Join the early waitlist for Veteran Verify. Vendors and veterans: get updates and early access." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://veteranverify.net/" />
+  <meta property="og:image" content="/assets/og-veteran-verify.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Favicons (optional) -->
+  <link rel="icon" href="/favicon.ico" />
+
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0b3d91;
-      color: white;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      text-align: center;
+    :root{
+      --navy:#0d3d8c;   /* hero background */
+      --navy-900:#082a60;
+      --blue:#2162ff;   /* accent */
+      --gold:#ffcc33;  /* subtle highlight */
+      --ink:#0c1424;    /* body text */
+      --muted:#6b778c;
+      --bg:#f7f9fc;
+      --card:#ffffff;
+      --radius:14px;
+      --shadow:0 10px 30px rgba(12,20,36,.12);
+      --shadow-soft:0 6px 18px rgba(12,20,36,.08);
+      --focus: 0 0 0 3px rgba(33,98,255,.35);
     }
-    h1 {
-      font-size: 3rem;
-      margin-bottom: 1rem;
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;
+      color:var(--ink);
+      background:var(--bg);
+      line-height:1.45;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
     }
-    p {
-      font-size: 1.25rem;
-      max-width: 600px;
+
+    /* Header */
+    .site-header{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:16px 20px;
+      background:var(--card);
+      border-bottom:1px solid #e7ecf3;
+      position:sticky; top:0; z-index:10;
     }
-    footer {
-      position: absolute;
-      bottom: 10px;
-      font-size: 0.9rem;
-      opacity: 0.8;
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      text-decoration:none; color:inherit;
+    }
+    .brand img{width:36px; height:36px}
+    .brand .wordmark{
+      font-weight:800; letter-spacing:0.2px;
+      font-size:1.1rem;
+    }
+
+    /* Hero */
+    .hero{
+      background:linear-gradient(180deg, var(--navy) 0%, var(--navy-900) 100%);
+      color:white;
+      padding:64px 20px;
+    }
+    .container{max-width:980px; margin:0 auto}
+    .hero-inner{
+      display:grid; gap:28px; align-items:center;
+      grid-template-columns:1fr;
+    }
+    .kicker{
+      display:inline-block;
+      font-size:.82rem;
+      letter-spacing:.8px;
+      text-transform:uppercase;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.25);
+      padding:6px 10px; border-radius:999px;
+    }
+    h1{
+      margin:0; font-size:clamp(2rem, 4vw, 3rem);
+      line-height:1.1; font-weight:900;
+    }
+    .hero p{margin:0; color:#e6edff; font-size:1.06rem}
+
+    /* Card form */
+    .cta-card{
+      margin-top:18px;
+      background:var(--card); color:var(--ink);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:22px;
+    }
+    form{display:grid; gap:14px}
+    label{font-weight:600; font-size:.92rem}
+    .row{display:grid; gap:12px; grid-template-columns:1fr}
+    input[type="text"], input[type="email"], select, textarea{
+      width:100%; padding:12px 12px;
+      border:1px solid #d7dfec; border-radius:10px;
+      background:#fff; font-size:1rem;
+      outline:none; box-shadow:none;
+    }
+    textarea{min-height:96px; resize:vertical}
+    input:focus, select:focus, textarea:focus{box-shadow:var(--focus); border-color:var(--blue)}
+    .roles{display:flex; gap:10px; flex-wrap:wrap}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      border:1px solid #d7dfec; padding:8px 12px; border-radius:999px;
+      background:#fff; cursor:pointer; font-size:.95rem;
+      box-shadow:var(--shadow-soft);
+    }
+    .pill input{accent-color:var(--blue)}
+    .fineprint{color:var(--muted); font-size:.85rem}
+    .btn{
+      display:inline-block; text-align:center;
+      background:var(--blue); color:#fff;
+      padding:12px 16px; border-radius:10px;
+      border:none; font-weight:700; cursor:pointer;
+      transition:.15s transform ease;
+    }
+    .btn:hover{transform:translateY(-1px)}
+    .btn.secondary{background:#14213d}
+    .success{
+      display:none; padding:14px; border-radius:10px;
+      background:#e8f1ff; color:#0b2f83; border:1px solid #cfe0ff;
+      font-weight:600;
+    }
+
+    /* Sections */
+    .section{padding:40px 20px}
+    .grid-3{display:grid; gap:18px; grid-template-columns:1fr; margin-top:16px}
+    .feature{
+      background:var(--card); border:1px solid #e7ecf3; border-radius:14px; padding:18px;
+    }
+    .feature h3{margin:.2rem 0 .4rem 0}
+    .feature p{margin:0; color:#435068}
+
+    /* Footer */
+    footer{padding:30px 20px; color:#7a869a; text-align:center}
+
+    @media (min-width:760px){
+      .hero-inner{grid-template-columns:1.1fr .9fr}
+      .row{grid-template-columns:1fr 1fr}
+      .grid-3{grid-template-columns:repeat(3,1fr)}
     }
   </style>
 </head>
 <body>
-  <h1>Veteran Verify</h1>
-  <p>Your trusted platform for veteran verification.  
-     This is our starting point — more coming soon!</p>
-  <footer>© 2025 VeteranVerify.net</footer>
+  <header class="site-header">
+    <a class="brand" href="/">
+      <!-- Replace with your real logo file -->
+      <img src="/assets/logo.svg" alt="Veteran Verify logo" />
+      <span class="wordmark">Veteran Verify</span>
+    </a>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-inner">
+        <div>
+          <span class="kicker">Coming soon</span>
+          <h1>Trusted veteran verification — built simple, private, and fair.</h1>
+          <p>We’re creating a streamlined way for veterans to prove service privately, and for vendors to verify eligibility without friction. Join the early list for updates and pilot access.</p>
+        </div>
+
+        <div class="cta-card" aria-labelledby="join">
+          <h2 id="join" style="margin:0 0 8px 0; font-size:1.25rem;">Join the early access list</h2>
+          <div id="form-success" class="success" role="status" aria-live="polite">Thanks—you're on the list! We’ll email you with next steps.</div>
+
+          <!-- Netlify form: works with/without JS -->
+          <form name="vv-waitlist" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+            <input type="hidden" name="form-name" value="vv-waitlist" />
+            <p style="display:none;">
+              <label>Don’t fill this out: <input name="bot-field" /></label>
+            </p>
+
+            <div class="row">
+              <div>
+                <label for="name">Name</label>
+                <input id="name" name="name" type="text" autocomplete="name" placeholder="Jane Doe" required />
+              </div>
+              <div>
+                <label for="email">Email</label>
+                <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
+              </div>
+            </div>
+
+            <div>
+              <label>I'm a…</label>
+              <div class="roles" role="group" aria-label="Role">
+                <label class="pill"><input type="checkbox" name="role" value="Veteran" /> Veteran</label>
+                <label class="pill"><input type="checkbox" name="role" value="Vendor" /> Vendor / Business</label>
+                <label class="pill"><input type="checkbox" name="role" value="Both" /> Both</label>
+              </div>
+            </div>
+
+            <div class="row">
+              <div>
+                <label for="org">Organization (optional)</label>
+                <input id="org" name="organization" type="text" placeholder="Your store or group" />
+              </div>
+              <div>
+                <label for="state">State (optional)</label>
+                <input id="state" name="state" type="text" placeholder="FL, NC, etc." />
+              </div>
+            </div>
+
+            <div>
+              <label for="msg">Anything else?</label>
+              <textarea id="msg" name="message" placeholder="Tell us what would make this valuable for you."></textarea>
+            </div>
+
+            <label class="fineprint">
+              <input type="checkbox" name="updates" value="yes" /> Send me product updates and pilot invites.
+            </label>
+
+            <button class="btn" type="submit">Request Early Access</button>
+            <p class="fineprint">We’ll only use your email for Veteran Verify updates. You can unsubscribe anytime.</p>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="grid-3">
+          <div class="feature">
+            <h3>Private by design</h3>
+            <p>We collect the minimum needed and never share data without consent. Verification should protect—never expose.</p>
+          </div>
+          <div class="feature">
+            <h3>Frictionless for vendors</h3>
+            <p>Simple checks, fast onboarding, and APIs that slot into your checkout flow or point-of-sale.</p>
+          </div>
+          <div class="feature">
+            <h3>Built with veterans</h3>
+            <p>We’re co-developing with the community to keep the process respectful, fair, and accessible.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>© <span id="yr"></span> VeteranVerify.net — All rights reserved.</footer>
+
+  <!-- Optional: JS to show inline success without redirect -->
+  <script>
+    document.getElementById('yr').textContent = new Date().getFullYear();
+
+    const form = document.querySelector('form[name="vv-waitlist"]');
+    if (form) {
+      form.addEventListener('submit', async (e) => {
+        // If Netlify handles it, this is fine; this JS improves UX with inline success.
+        e.preventDefault();
+        const data = new FormData(form);
+        try {
+          await fetch('/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: new URLSearchParams([...data]).toString()
+          });
+          form.reset();
+          document.getElementById('form-success').style.display = 'block';
+        } catch {
+          form.submit(); // fallback to normal POST
+        }
+      });
+    }
+  </script>
 </body>
 </html>
