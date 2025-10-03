@@ -177,8 +177,16 @@
           <div id="form-success" class="success" role="status" aria-live="polite">Thanks—you're on the list! We’ll email you with next steps.</div>
 
           <!-- Netlify form: works with/without JS -->
-          <form name="vv-waitlist" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+          <form
+            name="vv-waitlist"
+            method="POST"
+            data-netlify="true"
+            netlify-honeypot="bot-field"
+            accept-charset="UTF-8"
+            data-netlify-recaptcha="true"
+          >
             <input type="hidden" name="form-name" value="vv-waitlist" />
+            <input type="hidden" name="subject" value="New Veteran Verify early-access signup" />
             <p style="display:none;">
               <label>Don’t fill this out: <input name="bot-field" /></label>
             </p>
@@ -197,9 +205,9 @@
             <div>
               <label>I'm a…</label>
               <div class="roles" role="group" aria-label="Role">
-                <label class="pill"><input type="checkbox" name="role" value="Veteran" /> Veteran</label>
-                <label class="pill"><input type="checkbox" name="role" value="Vendor" /> Vendor / Business</label>
-                <label class="pill"><input type="checkbox" name="role" value="Both" /> Both</label>
+                <label class="pill"><input type="checkbox" name="role[]" value="Veteran" /> Veteran</label>
+                <label class="pill"><input type="checkbox" name="role[]" value="Vendor" /> Vendor / Business</label>
+                <label class="pill"><input type="checkbox" name="role[]" value="Both" /> Both</label>
               </div>
             </div>
 
@@ -222,6 +230,9 @@
             <label class="fineprint">
               <input type="checkbox" name="updates" value="yes" /> Send me product updates and pilot invites.
             </label>
+
+            <!-- reCAPTCHA widget (enable in Netlify UI) -->
+            <div data-netlify-recaptcha="true"></div>
 
             <button class="btn" type="submit">Request Early Access</button>
             <p class="fineprint">We’ll only use your email for Veteran Verify updates. You can unsubscribe anytime.</p>
@@ -259,17 +270,18 @@
     const form = document.querySelector('form[name="vv-waitlist"]');
     if (form) {
       form.addEventListener('submit', async (e) => {
-        // If Netlify handles it, this is fine; this JS improves UX with inline success.
         e.preventDefault();
         const data = new FormData(form);
+
         try {
           await fetch('/', {
             method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: new URLSearchParams([...data]).toString()
           });
           form.reset();
-          document.getElementById('form-success').style.display = 'block';
+          const ok = document.getElementById('form-success');
+          if (ok) ok.style.display = 'block';
         } catch {
           form.submit(); // fallback to normal POST
         }
