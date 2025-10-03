@@ -2,7 +2,7 @@
   # Force strict HTTPS everywhere
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 
-  # Content Security Policy (tight, but allows your inline styles; see notes)
+  # Content Security Policy (tight, but allows inline styles & scripts)
   Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; font-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
 
   # Don’t leak MIME or referrer info
@@ -16,3 +16,6 @@
   # Cross-origin isolation (good defaults for static)
   Cross-Origin-Opener-Policy: same-origin
   Cross-Origin-Resource-Policy: same-origin
+
+  # Prevent older browsers from running in compatibility (IE) mode
+  X-UA-Compatible: IE=edge
