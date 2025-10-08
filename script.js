@@ -17,15 +17,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const yr = document.getElementById("yr");
   if (yr) yr.textContent = new Date().getFullYear();
 
+  // 🟡 NEW tiny polish — prevents accidental double submissions
+  let isSubmitting = false;
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;   // ignore double clicks
+    isSubmitting = true;
+    if (btn) btn.disabled = true;
 
     const data = new FormData(form);
     const body = new URLSearchParams([...data]).toString();
-    if (btn) btn.disabled = true;
 
     try {
-      // 1) Save to your Netlify Function (Supabase, etc.)
+      // 1️⃣ Save to your Netlify Function (Supabase, etc.)
       const res = await fetch("/.netlify/functions/signup", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -33,14 +38,14 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       if (!res.ok) throw new Error("Function failed");
 
-      // 2) Also ping Netlify Forms so you still get the email (AJAX; no navigation)
+      // 2️⃣ Also ping Netlify Forms (email alert) — AJAX only, no reload
       await fetch("/", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body
       });
 
-      // Success UX: reset, reveal banner, fade & scroll
+      // ✅ Success UX
       form.reset();
       if (ok) {
         ok.style.display = "block";
@@ -49,13 +54,13 @@ document.addEventListener("DOMContentLoaded", () => {
         ok.scrollIntoView({ behavior: "smooth", block: "center" });
       }
 
-      // Prevent any accidental POST-in-history from causing refresh emails
+      // ✅ Prevent refresh-email issue
       history.replaceState(null, "", window.location.pathname);
     } catch (err) {
       console.error(err);
-      // (No classic form.submit() fallback — avoids POST/refresh loops)
       alert("⚠️ Something went wrong. Please try again later.");
     } finally {
+      isSubmitting = false;
       if (btn) btn.disabled = false;
     }
   });
