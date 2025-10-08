@@ -1,1 +1,12 @@
+# Minimal config for a static site + classic Netlify Functions
+[build]
+  command = ""         # no build step; just install deps
+  publish  = "."       # serve files from repo root
 
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"   # bundles ESM imports like supabase-js
+
+# (optional) local dev helper
+[dev]
+  framework = "#static"
