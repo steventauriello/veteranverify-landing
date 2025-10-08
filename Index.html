@@ -281,8 +281,8 @@
     const ok = document.getElementById('form-success');
     if (!ok) return;
     ok.classList.add('show');
-    ok.setAttribute('role', 'alert');          // announce immediately
-    ok.setAttribute('tabindex', '-1');         // focusable for screen readers
+    ok.setAttribute('role', 'alert');
+    ok.setAttribute('tabindex', '-1');
     ok.focus({ preventScroll: true });
     ok.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
@@ -295,7 +295,6 @@
       const body = new URLSearchParams([...data]).toString();
 
       try {
-        // 1) save to Supabase via your Netlify Function
         const res = await fetch('/.netlify/functions/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -303,22 +302,14 @@
         });
         if (!res.ok) throw new Error('Function failed');
 
-        // 2) also ping Netlify Forms so you still get the email
-        await fetch('/', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body
-        });
-
         form.reset();
         showThanks();
       } catch (err) {
         console.error(err);
-        // fallback: still trigger Netlify Forms the classic way (page reload)
-        form.submit();
+        form.submit(); // fallback to Netlify's built-in form handler
       }
     });
   }
-</script>
+</script>>
 </body>
 </html>
