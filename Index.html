@@ -285,6 +285,8 @@
 
       try {
         // 1) Submit to your Netlify Function (saves to Supabase)
+        const btn = form.querySelector('button[type="submit"]');
+if (btn) btn.disabled = true;
         const res = await fetch('/.netlify/functions/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -299,6 +301,7 @@
           body
         });
 
+        if (btn) btn.disabled = false;
         form.reset();
         const ok = document.getElementById('form-success');
 if (ok) ok.classList.add('show');   // uses your .success.show CSS
