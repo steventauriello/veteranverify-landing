@@ -263,28 +263,28 @@
   <footer>© <span id="yr"></span> VeteranVerify.net — All rights reserved.</footer>
 
   <!-- Inline success UX; falls back to normal POST if JS fails -->
-  <script>
-    document.getElementById('yr').textContent = new Date().getFullYear();
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
 
-    const form = document.querySelector('form[name="vv-waitlist"]');
-    if (form) {
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const data = new FormData(form);
-        try {
-          await fetch('/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams([...data]).toString()
-          });
-          form.reset();
-          const ok = document.getElementById('form-success');
-          if (ok) ok.style.display = 'block';
-        } catch {
-          form.submit(); // fallback to Netlify's normal capture
-        }
-      });
-    }
-  </script>
+  const form = document.querySelector('form[name="vv-waitlist"]');
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = new FormData(form);
+      try {
+        await fetch('/.netlify/functions/signup', {   // ← call your function
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams([...data]).toString()
+        });
+        form.reset();
+        const ok = document.getElementById('form-success');
+        if (ok) ok.style.display = 'block';
+      } catch {
+        form.submit(); // fallback to Netlify Forms
+      }
+    });
+  }
+</script>
 </body>
 </html>
