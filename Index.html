@@ -272,29 +272,17 @@
 
   <!-- Inline success UX; falls back to normal POST if JS fails -->
 <script>
-  // update footer year
   document.getElementById('yr').textContent = new Date().getFullYear();
 
   const form = document.querySelector('form[name="vv-waitlist"]');
-
-  function showThanks() {
-    const ok = document.getElementById('form-success');
-    if (!ok) return;
-    ok.classList.add('show');
-    ok.setAttribute('role', 'alert');
-    ok.setAttribute('tabindex', '-1');
-    ok.focus({ preventScroll: true });
-    ok.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
-
   if (form) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-
       const data = new FormData(form);
       const body = new URLSearchParams([...data]).toString();
 
       try {
+        // 1) Write to Supabase via Netlify Function
         const res = await fetch('/.netlify/functions/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -302,11 +290,20 @@
         });
         if (!res.ok) throw new Error('Function failed');
 
+        // 2) Also create a Netlify Forms submission (triggers email)
+        await fetch('/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body
+        });
+
         form.reset();
-        showThanks();
+        const ok = document.getElementById('form-success');
+        if (ok) ok.style.display = 'block';
       } catch (err) {
         console.error(err);
-        form.submit(); // fallback to Netlify's built-in form handler
+        // Fall back to normal form submit (also triggers Netlify Forms email)
+        form.submit();
       }
     });
   }
