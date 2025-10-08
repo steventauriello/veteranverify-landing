@@ -104,3 +104,20 @@ footer{padding:30px 20px; color:#7a869a; text-align:center}
   .row{grid-template-columns:1fr 1fr}
   .grid-3{grid-template-columns:repeat(3,1fr)}
 }
+/* already there, but keep it */
+.success{
+  display:none;
+  padding:14px;
+  border-radius:10px;
+  background:#e8f1ff;
+  color:#0b2f83;
+  border:1px solid #cfe0ff;
+  font-weight:600;
+  scroll-margin-top: 80px; /* so it isn’t hidden under the sticky header */
+}
+.success.show{ display:block; animation:fade-in .25s ease-out; }
+
+@keyframes fade-in{
+  from{ opacity:0; transform:translateY(-4px); }
+  to{ opacity:1; transform:none; }
+}
