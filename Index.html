@@ -268,6 +268,17 @@
   document.getElementById('yr').textContent = new Date().getFullYear();
 
   const form = document.querySelector('form[name="vv-waitlist"]');
+
+  function showThanks() {
+    const ok = document.getElementById('form-success');
+    if (!ok) return;
+    ok.classList.add('show');
+    ok.setAttribute('role', 'alert');          // announce immediately
+    ok.setAttribute('tabindex', '-1');         // focusable for screen readers
+    ok.focus({ preventScroll: true });
+    ok.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
   if (form) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -276,7 +287,7 @@
       const body = new URLSearchParams([...data]).toString();
 
       try {
-        // 1) Submit to your Netlify Function (saves to Supabase)
+        // 1) save to Supabase via your Netlify Function
         const res = await fetch('/.netlify/functions/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -284,7 +295,7 @@
         });
         if (!res.ok) throw new Error('Function failed');
 
-        // 2) ALSO send to Netlify Forms (so you still get the email alert)
+        // 2) also ping Netlify Forms so you still get the email
         await fetch('/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -292,11 +303,10 @@
         });
 
         form.reset();
-        const ok = document.getElementById('form-success');
-        if (ok) ok.style.display = 'block';
+        showThanks();
       } catch (err) {
         console.error(err);
-        // fallback: submit normally (still triggers Netlify form email)
+        // fallback: still trigger Netlify Forms the classic way (page reload)
         form.submit();
       }
     });
