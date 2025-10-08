@@ -127,6 +127,7 @@
       border:none; font-weight:700; cursor:pointer;
       transition:.15s transform ease;
     }
+    .btn[disabled]{opacity:.6; cursor:not-allowed}
     .btn:hover{transform:translateY(-1px)}
     .btn.secondary{background:#14213d}
     .success{
@@ -134,15 +135,9 @@
       background:#e8f1ff; color:#0b2f83; border:1px solid #cfe0ff;
       font-weight:600;
     }
-.success.show {
-  display: block;
-  animation: fade-in 0.25s ease-out;
-}
+    .success.show { display:block; animation: fade-in 0.25s ease-out; }
+    @keyframes fade-in { from { opacity:.0; transform: translateY(-4px);} to { opacity:1; transform:none;} }
 
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: none; }
-}
     /* Sections */
     .section{padding:40px 20px}
     .grid-3{display:grid; gap:18px; grid-template-columns:1fr; margin-top:16px}
@@ -165,7 +160,6 @@
 <body>
   <header class="site-header">
     <a class="brand" href="/">
-      <!-- Replace with your real logo file -->
       <img src="/assets/logo.svg" alt="Veteran Verify logo" />
       <span class="wordmark">Veteran Verify</span>
     </a>
@@ -182,7 +176,11 @@
 
         <div class="cta-card" aria-labelledby="join">
           <h2 id="join" style="margin:0 0 8px 0; font-size:1.25rem;">Join the early access list</h2>
-          <div id="form-success" class="success" role="status" aria-live="polite">Thanks—you're on the list! We’ll email you with next steps.</div>
+
+          <!-- Success banner (hidden until submit succeeds) -->
+          <div id="form-success" class="success" role="status" aria-live="polite">
+            Thanks—you're on the list! We’ll email you with next steps.
+          </div>
 
           <!-- Netlify form: works with/without JS -->
           <form
@@ -243,6 +241,10 @@
 
             <button class="btn" type="submit">Request Early Access</button>
             <p class="fineprint">We’ll only use your email for Veteran Verify updates. You can unsubscribe anytime.</p>
+
+            <noscript>
+              <p class="fineprint">JavaScript is disabled. The form will submit with a page reload.</p>
+            </noscript>
           </form>
         </div>
       </div>
@@ -271,44 +273,55 @@
   <footer>© <span id="yr"></span> VeteranVerify.net — All rights reserved.</footer>
 
   <!-- Inline success UX; falls back to normal POST if JS fails -->
-<script>
-  // update footer year
-  document.getElementById('yr').textContent = new Date().getFullYear();
+  <script>
+    // update footer year
+    document.getElementById('yr').textContent = new Date().getFullYear();
 
-  const form = document.querySelector('form[name="vv-waitlist"]');
-  if (form) {
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+    const form = document.querySelector('form[name="vv-waitlist"]');
+    if (form) {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-      const data = new FormData(form);
-      const body = new URLSearchParams([...data]).toString();
+        const data = new FormData(form);
+        const body = new URLSearchParams([...data]).toString();
+        const btn = form.querySelector('button[type="submit"]');
+        if (btn) btn.disabled = true;
 
-      try {
-        // 1) Submit to your Netlify Function (saves to Supabase)
-        const res = await fetch('/.netlify/functions/signup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body
-        });
-        if (!res.ok) throw new Error('Function failed');
+        try {
+          // 1) Save to Supabase via your Netlify Function
+          const res = await fetch('/.netlify/functions/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body
+          });
+          if (!res.ok) throw new Error('Function failed');
 
-        // 2) ALSO send to Netlify Forms (so you still get the email alert)
-        await fetch('/', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body
-        });
+          // 2) Also ping Netlify Forms so you still get the email alert
+          await fetch('/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body
+          });
 
-        form.reset();
-        const ok = document.getElementById('form-success');
-        if (ok) ok.style.display = 'block';
-      } catch (err) {
-        console.error(err);
-        // fallback: submit normally (still triggers Netlify form email)
-        form.submit();
-      }
-    });
-  }
-</script>
+          form.reset();
+
+          // Success reveal (both inline style and class for robustness)
+          const ok = document.getElementById('form-success');
+          if (ok) {
+            ok.style.display = 'block';
+            ok.classList.add('show');
+            ok.setAttribute('role', 'alert');
+            ok.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        } catch (err) {
+          console.error(err);
+          // Fallback: classic Netlify Forms submit (page reload)
+          form.submit();
+        } finally {
+          if (btn) btn.disabled = false;
+        }
+      });
+    }
+  </script>
 </body>
 </html>
