@@ -47,7 +47,7 @@ export async function handler(event) {
       ua: event.headers['user-agent'] || null,
       created_at: new Date().toISOString()
     })
-// netlify/functions/signup.js
+
     if (error) {
       console.error('Supabase insert error:', error)
       return { statusCode: 500, body: 'Insert failed' }
