@@ -268,45 +268,6 @@
 
   <footer>© <span id="yr"></span> VeteranVerify.net — All rights reserved.</footer>
 
-  <!-- Inline success UX; falls back to normal POST if JS fails -->
-<script>
-  // update footer year
-  document.getElementById('yr').textContent = new Date().getFullYear();
-
-  const form = document.querySelector('form[name="vv-waitlist"]');
-  if (form) {
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const data = new FormData(form);
-      const body = new URLSearchParams([...data]).toString();
-
-      try {
-        // 1) Submit to your Netlify Function (saves to Supabase)
-        const res = await fetch('/.netlify/functions/signup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body
-        });
-        if (!res.ok) throw new Error('Function failed');
-
-        // 2) ALSO send to Netlify Forms (so you still get the email alert)
-        await fetch('/', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body
-        });
-
-        form.reset();
-        const ok = document.getElementById('form-success');
-        if (ok) ok.style.display = 'block';
-      } catch (err) {
-        console.error(err);
-        // fallback: submit normally (still triggers Netlify form email)
-        form.submit();
-      }
-    });
-  }
-</script>
+<script src="/script.js" defer></script>
 </body>
 </html>
