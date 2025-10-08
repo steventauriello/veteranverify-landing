@@ -272,7 +272,6 @@
 
   <!-- Inline success UX; falls back to normal POST if JS fails -->
 <script>
-  // update footer year
   document.getElementById('yr').textContent = new Date().getFullYear();
 
   const form = document.querySelector('form[name="vv-waitlist"]');
@@ -282,11 +281,11 @@
 
       const data = new FormData(form);
       const body = new URLSearchParams([...data]).toString();
+      const btn = form.querySelector('button[type="submit"]');
+      if (btn) btn.disabled = true;
 
       try {
-        // 1) Submit to your Netlify Function (saves to Supabase)
-        const btn = form.querySelector('button[type="submit"]');
-if (btn) btn.disabled = true;
+        // 1) save to Supabase via Netlify Function
         const res = await fetch('/.netlify/functions/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -294,21 +293,26 @@ if (btn) btn.disabled = true;
         });
         if (!res.ok) throw new Error('Function failed');
 
-        // 2) ALSO send to Netlify Forms (so you still get the email alert)
+        // 2) also ping Netlify Forms so you get the email alert
         await fetch('/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body
         });
 
-        if (btn) btn.disabled = false;
         form.reset();
+
         const ok = document.getElementById('form-success');
-if (ok) ok.classList.add('show');   // uses your .success.show CSS
+        if (ok) {
+          ok.classList.add('show');
+          ok.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
       } catch (err) {
         console.error(err);
-        // fallback: submit normally (still triggers Netlify form email)
+        // fallback: still trigger Netlify Forms (page reload)
         form.submit();
+      } finally {
+        if (btn) btn.disabled = false;
       }
     });
   }
