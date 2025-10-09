@@ -23,7 +23,7 @@
       --navy:#0d3d8c;   /* hero background */
       --navy-900:#082a60;
       --blue:#2162ff;   /* accent */
-      --gold:#ffcc33;  /* subtle highlight */
+      --gold:#ffcc33;   /* subtle highlight */
       --ink:#0c1424;    /* body text */
       --muted:#6b778c;
       --bg:#f7f9fc;
@@ -46,37 +46,40 @@
       -moz-osx-font-smoothing:grayscale;
     }
 
-    /* Header */
+    /* =========================
+       Header (updated)
+       ========================= */
     .site-header{
       display:flex;
       align-items:center;
-      justify-content:center;
-      padding:16px 20px;
+      justify-content:flex-start;                 /* move brand to the left */
+      padding:12px clamp(16px, 5vw, 40px);
       background:var(--card);
       border-bottom:1px solid #e7ecf3;
       position:sticky; top:0; z-index:10;
     }
     .brand{
-      display:flex; align-items:center; gap:12px;
+      display:inline-flex; align-items:center; gap:12px;
       text-decoration:none; color:inherit;
     }
-
-    /* BIGGER LOGO */
     .brand img{
-      height:96px;        /* bump size (try 56px if you want larger) */
-      width:auto;         /* keep aspect ratio */
-      object-fit:contain; /* avoid distortion */
+      height:56px;        /* make the logo larger */
+      width:auto;
+      object-fit:contain;
+    }
+    .brand .wordmark{
+      font-weight:800;
+      line-height:1;
+      font-size:clamp(1.25rem, 1.9vw, 1.75rem);  /* bigger title text */
     }
     @media (max-width:640px){
-      .brand img{ height:36px; }
+      .brand img{ height:44px; }
+      .brand .wordmark{ font-size:1.2rem; }
     }
 
-    .brand .wordmark{
-      font-weight:800; letter-spacing:0.2px;
-      font-size:1.1rem;
-    }
-
-    /* Hero */
+    /* =========================
+       Hero & layout
+       ========================= */
     .hero{
       background:linear-gradient(180deg, var(--navy) 0%, var(--navy-900) 100%);
       color:white;
@@ -166,6 +169,7 @@
     }
   </style>
 </head>
+
 
 <body>
   <header class="site-header">
