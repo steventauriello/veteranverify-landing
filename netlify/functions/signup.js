@@ -1,91 +1,71 @@
 // netlify/functions/signup.js
 import { createClient } from "@supabase/supabase-js";
 
-/**
- * BASIC CONFIG — tweak as needed
- */
+/* ===================== CONFIG ===================== */
 const TABLE = "signups";
-const SITE_SLUG = "veteranverify";                 // your netlify app name before .netlify.app
+const SITE_SLUG = "veteranverify"; // your Netlify site name before .netlify.app
 const PROD_DOMAINS = ["veteranverify.net", "www.veteranverify.net"];
-const DEBUG = true;                                // flip to false after stabilizing
+const DEBUG = true; // flip to false once stable
 
-// Optional fallback for convenience (ENV still preferred)
+// Optional fallback (env still preferred)
 const HARDCODED_SUPABASE_URL = "https://hyuawfauycyeqbhfwxx.supabase.co";
 
-/**
- * ENV + CLIENT
- */
+/* ================= ENV + CLIENT =================== */
 const SUPABASE_URL = (
   (process.env.SUPABASE_URL || HARDCODED_SUPABASE_URL || "").trim()
 ).replace(/\/+$/, "");
 
 const SERVICE_KEY =
   (process.env.SUPABASE_SERVICE_KEY ||
-   process.env.SUPABASE_SERVICE_ROLE_KEY ||         // common alias
-   process.env.SUPABASE_SECRET ||                   // just in case older name was used
+   process.env.SUPABASE_SERVICE_ROLE_KEY ||
+   process.env.SUPABASE_SECRET ||
    "").trim();
 
-const WEBHOOK_TOKEN = (
-  process.env.FORM_WEBHOOK_SECRET || process.env.WEBHOOK_TOKEN || ""
-).trim();
+const WEBHOOK_TOKEN =
+  (process.env.FORM_WEBHOOK_SECRET || process.env.WEBHOOK_TOKEN || "").trim();
 
 const supabase = createClient(SUPABASE_URL, SERVICE_KEY, {
   auth: { persistSession: false },
 });
 
-/**
- * HELPERS
- */
+/* ===================== HELPERS ==================== */
 const log = (...a) => DEBUG && console.log("[signup]", ...a);
 const errlog = (...a) => console.error("[signup]", ...a);
 
 const isEmail = (s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s || "").trim());
-const asBool = (v) => v === true || v === "true" || v === "1" || v === "yes" || v === "on";
+const asBool  = (v) => v === true || v === "true" || v === "1" || v === "yes" || v === "on";
 
 const tryJson = (s) => { try { return JSON.parse(s); } catch { return null; } };
 
-const getBodyString = (event) => {
-  if (!event?.body) return "";
-  return event.isBase64Encoded
+const getBodyString = (event) =>
+  !event?.body ? "" : (event.isBase64Encoded
     ? Buffer.from(event.body, "base64").toString("utf8")
-    : event.body;
-};
+    : event.body);
 
-// Netlify form webhook payload can be:
-// { payload: { data: {...} } }  OR  { data: {...} }  OR  {...fields...}
+// Netlify form webhook payload can be: {payload:{data:{...}}} OR {data:{...}} OR {...fields...}
 const pickNetlifyData = (obj) => obj?.payload?.data ?? obj?.data ?? obj;
 
-const isAllowedHostname = (hostname) => {
-  if (!hostname) return false;
-  // Production netlify domain
-  if (hostname === `${SITE_SLUG}.netlify.app`) return true;
-  // Branch / deploy-preview, e.g. main--site.netlify.app or deploy-preview-23--site.netlify.app
-  if (hostname.endsWith(`--${SITE_SLUG}.netlify.app`)) return true;
-  // Custom domains
-  if (PROD_DOMAINS.includes(hostname)) return true;
-  // Local dev
-  if (hostname === "localhost" || hostname === "127.0.0.1") return true;
+const isAllowedHostname = (h) => {
+  if (!h) return false;
+  if (h === `${SITE_SLUG}.netlify.app`) return true;              // prod .netlify.app
+  if (h.endsWith(`--${SITE_SLUG}.netlify.app`)) return true;      // branch / deploy-preview
+  if (PROD_DOMAINS.includes(h)) return true;                      // custom domains
+  if (h === "localhost" || h === "127.0.0.1") return true;        // local dev
   return false;
 };
 
 const getRequestOrigin = (headers) => {
   const h = headers || {};
-  const rawOrigin = h.origin || h.Origin || null;
-  if (rawOrigin) return rawOrigin;
-  const referer = h.referer || h.Referer || null;
-  if (!referer) return null;
-  try {
-    return new URL(referer).origin;
-  } catch {
-    return null;
-  }
+  const o = h.origin || h.Origin;
+  if (o) return o;
+  const r = h.referer || h.Referer;
+  if (!r) return null;
+  try { return new URL(r).origin; } catch { return null; }
 };
 
-/**
- * HANDLER
- */
+/* ===================== HANDLER ==================== */
 export async function handler(event) {
-  // ALWAYS make at least one log entry so Netlify shows activity
+  // Always log an entry so you can see activity in Netlify
   console.log("[signup] invoked", {
     t: new Date().toISOString(),
     method: event.httpMethod,
@@ -94,14 +74,12 @@ export async function handler(event) {
   });
 
   const hdrs = event.headers || {};
-
-  // Origin computation (prefer Origin header; fallback to Referer.origin)
   const requestOrigin = getRequestOrigin(hdrs);
   let requestHostname = null;
   try { requestHostname = requestOrigin ? new URL(requestOrigin).hostname : null; } catch {}
   const allowedOrigin = !!requestHostname && isAllowedHostname(requestHostname);
 
-  // Compose raw URL so we can read ?token or ?secret for webhooks
+  // Build URL so we can read ?token for webhooks
   const rawUrl =
     event.rawUrl ||
     `https://${hdrs.host}${event.path}${event.rawQuery ? `?${event.rawQuery}` : ""}`;
@@ -109,7 +87,7 @@ export async function handler(event) {
   const token = url.searchParams.get("token") || url.searchParams.get("secret");
   const isWebhook = Boolean(token && WEBHOOK_TOKEN && token === WEBHOOK_TOKEN);
 
-  // CORS headers (strict for POST; OPTIONS handled separately & permissively)
+  // Strict CORS headers (used for POST responses)
   const strictCors = allowedOrigin
     ? {
         "Access-Control-Allow-Origin": requestOrigin,
@@ -119,7 +97,7 @@ export async function handler(event) {
       }
     : {};
 
-  // OPTIONS preflight — be permissive so debugging never dies at preflight
+  // OPTIONS preflight — permissive so debugging never dies at preflight
   if (event.httpMethod === "OPTIONS") {
     log("OPTIONS preflight from:", requestOrigin || "(no origin)");
     const acrh =
@@ -138,7 +116,7 @@ export async function handler(event) {
     };
   }
 
-  // Gate POSTs: require allowed browser origin OR a valid webhook token
+  // Gate POSTs: require allowed browser origin OR valid webhook token
   if (!allowedOrigin && !isWebhook) {
     log("403 Forbidden", { requestOrigin, requestHostname, isWebhook });
     return { statusCode: 403, headers: strictCors, body: "Forbidden" };
@@ -154,6 +132,21 @@ export async function handler(event) {
     return { statusCode: 500, headers: strictCors, body: "Server misconfigured (service key)" };
   }
 
+  // ---- Quick connectivity probe to surface DNS/IPv6 issues ----
+  try {
+    console.log("[signup] SUPABASE_URL host:", new URL(SUPABASE_URL).host);
+    console.log("[signup] SERVICE_KEY length:", SERVICE_KEY.length);
+    const ping = await fetch(`${SUPABASE_URL}/rest/v1/`, {
+      method: "HEAD",
+      headers: { apikey: SERVICE_KEY, authorization: `Bearer ${SERVICE_KEY}` },
+    });
+    console.log("[signup] REST ping status:", ping.status);
+  } catch (e) {
+    errlog("REST ping failed:", e?.message || e);
+    // Common fix: set Netlify env NODE_OPTIONS="--dns-result-order=ipv4first"
+    return { statusCode: 502, headers: strictCors, body: "Supabase REST unreachable" };
+  }
+
   try {
     // ---- Parse body ----
     const ct = String(hdrs["content-type"] || hdrs["Content-Type"] || "").toLowerCase();
@@ -162,16 +155,14 @@ export async function handler(event) {
 
     let payload = {};
     if (ct.includes("application/json")) {
-      const raw = tryJson(bodyStr) || {};
-      payload = pickNetlifyData(raw);
+      payload = pickNetlifyData(tryJson(bodyStr) || {});
       log("parsed json keys:", Object.keys(payload || {}));
     } else if (ct.includes("application/x-www-form-urlencoded")) {
       const params = new URLSearchParams(bodyStr || "");
       payload = Object.fromEntries(params);
-      payload["role[]"] = params.getAll("role[]"); // capture multi-checkbox
+      payload["role[]"] = params.getAll("role[]"); // multi-checkbox
       log("parsed form-encoded keys:", Object.keys(payload || {}));
     } else {
-      // Try JSON anyway if ct is missing/wrong
       const maybe = tryJson(bodyStr);
       if (maybe) {
         payload = pickNetlifyData(maybe);
@@ -206,10 +197,10 @@ export async function handler(event) {
       role = String(payload.role);
     }
 
-    const state          = payload.state || null;
-    const organization   = payload.organization || null;
-    const message        = payload.message || null;
-    const updates_opt_in = asBool(payload.updates) || asBool(payload.updates_opt_in);
+    const state           = payload.state || null;
+    const organization    = payload.organization || null;
+    const message         = payload.message || null;
+    const updates_opt_in  = asBool(payload.updates) || asBool(payload.updates_opt_in);
 
     const ip =
       hdrs["x-nf-client-connection-ip"] ||
