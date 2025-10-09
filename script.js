@@ -1,36 +1,25 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // (optional) keep your Learn More button
-  const lm = document.getElementById("learnMoreBtn");
-  if (lm) {
-    lm.addEventListener("click", () => {
-      alert("Veteran Verify is under construction — stay tuned!");
-    });
-  }
-
   const form = document.querySelector("form[name='vv-waitlist']");
   if (!form) return;
 
   const btn = form.querySelector('button[type="submit"]');
   const ok  = document.getElementById("form-success");
 
-  // Footer year (nice to have)
-  const yr = document.getElementById("yr");
-  if (yr) yr.textContent = new Date().getFullYear();
-
-  // 🟡 NEW tiny polish — prevents accidental double submissions
   let isSubmitting = false;
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    if (isSubmitting) return;   // ignore double clicks
+    if (isSubmitting) return;
     isSubmitting = true;
     if (btn) btn.disabled = true;
 
-    const data = new FormData(form);
-    const body = new URLSearchParams([...data]).toString();
-
     try {
-      // 1️⃣ Save to your Netlify Function (Supabase, etc.)
+      const data = new FormData(form);
+
+      // Build form-encoded body for both requests
+      const body = new URLSearchParams([...data]).toString();
+
+      // 1) Supabase (via Netlify Function)
       const res = await fetch("/.netlify/functions/signup", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -38,23 +27,21 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       if (!res.ok) throw new Error("Function failed");
 
-      // 2️⃣ Also ping Netlify Forms (email alert) — AJAX only, no reload
+      // 2) Netlify Forms (triggers email notification)
       await fetch("/", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body
       });
 
-      // ✅ Success UX
+      // Reset + success message (for progressive enhancement)
       form.reset();
       if (ok) {
-        ok.style.display = "block";
         ok.classList.add("show");
         ok.setAttribute("role", "alert");
         ok.scrollIntoView({ behavior: "smooth", block: "center" });
       }
-
-      // ✅ Prevent refresh-email issue
+      // Prevent refresh-resubmit emails
       history.replaceState(null, "", window.location.pathname);
     } catch (err) {
       console.error(err);
