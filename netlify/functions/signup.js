@@ -16,7 +16,8 @@ const DEBUG = true;
 // ---------- ENV & CLIENT ----------
 const SUPABASE_URL = (process.env.SUPABASE_URL || "").trim().replace(/\/+$/, "");
 const SERVICE_KEY   = (process.env.SUPABASE_SERVICE_KEY || "").trim();
-const WEBHOOK_TOKEN = (process.env.WEBHOOK_TOKEN || "").trim();
+// read the secret from either name (lets you keep older deploys working too)
+const WEBHOOK_TOKEN = (process.env.FORM_WEBHOOK_SECRET || process.env.WEBHOOK_TOKEN || "").trim();
 
 const supabase = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
 
