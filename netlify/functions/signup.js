@@ -21,11 +21,13 @@ const okCors = (origin) => ({
   Vary: "Origin"
 });
 
-// Server-side Supabase client (service_role)
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-);
+// --- SUPABASE SERVER CLIENT (uses Netlify env vars) ---
+const SUPABASE_URL = (process.env.SUPABASE_URL || "").trim().replace(/\/+$/, "");
+const SERVICE_KEY  = (process.env.SUPABASE_SERVICE_KEY || "").trim();
+
+const supabase = createClient(SUPABASE_URL, SERVICE_KEY, {
+  auth: { persistSession: false }
+});
 
 export async function handler(event) {
   const hdrs = event.headers || {};
@@ -45,7 +47,7 @@ export async function handler(event) {
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, headers: cors, body: "Method Not Allowed" };
   }
-  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
+  if (!SUPABASE_URL || !SERVICE_KEY) {
     console.error("Missing SUPABASE_URL or SUPABASE_SERVICE_KEY");
     return { statusCode: 500, headers: cors, body: "Server misconfigured" };
   }
@@ -113,22 +115,25 @@ export async function handler(event) {
       created_at: new Date().toISOString()
     };
 
-    // Insert (DEBUG: echo DB error message if it fails)
-    const { error } = await supabase.from(TABLE).insert(row);
-    if (error) {
-      console.error("Insert error:", JSON.stringify(error)); // shows in Netlify Logs
-      return {
-        statusCode: 500,
-        headers: { ...cors, "Content-Type": "text/plain" },
-        body: error.message || "Database insert failed"
-      };
-    }
+ // Insert and return the inserted row (so we can confirm it)
+const { data, error } = await supabase
+  .from(TABLE)
+  .insert(row)
+  .select(); // returns the new row(s)
 
-    return {
-      statusCode: 200,
-      headers: { ...cors, "Content-Type": "application/json", "Cache-Control": "no-store" },
-      body: JSON.stringify({ ok: true })
-    };
+if (error) {
+  console.error("Insert error:", JSON.stringify(error));
+  // Surface the reason during debugging; you can change this back to a generic message later
+  return { statusCode: 500, headers: cors, body: error.message || "Database insert failed" };
+}
+
+// Success
+return {
+  statusCode: 200,
+  headers: { ...cors, "Content-Type": "application/json", "Cache-Control": "no-store" },
+  body: JSON.stringify({ ok: true, id: data?.[0]?.id ?? null })
+};
+
   } catch (err) {
     console.error("Unhandled error:", err);
     return { statusCode: 500, headers: cors, body: "Server error" };
