@@ -1,33 +1,31 @@
 // netlify/functions/signup.js
 import { createClient } from "@supabase/supabase-js";
+import { randomUUID } from "node:crypto"; // optional: generate id in code too
 
 // --- CONFIG ---
-// Your Supabase table name:
 const TABLE = "signups";
 
-// Domains allowed to call this function (edit to match your live domains)
+// Domains allowed to call this function
 const ALLOWED_ORIGINS = [
   "https://veteranverify.net",
   "https://www.veteranverify.net",
-  // keep this only if you still use your Netlify preview domain:
   "https://veteranverify.netlify.app",
-  // keep only if you use `netlify dev` locally:
-  "http://localhost:8888"
+  "http://localhost:8888" // keep only if you use `netlify dev`
 ];
 
-// --- SUPABASE SERVER CLIENT (uses Netlify env vars) ---
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY // service_role key (server-side only)
-);
-
-// Small helper to build CORS headers
+// CORS helper
 const okCors = (origin) => ({
   "Access-Control-Allow-Origin": origin,
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
-  "Vary": "Origin"
+  Vary: "Origin"
 });
+
+// Server-side Supabase client (service_role)
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+);
 
 export async function handler(event) {
   const hdrs = event.headers || {};
@@ -53,47 +51,38 @@ export async function handler(event) {
   }
 
   try {
-    // Parse body (supports form-encoded & JSON)
-    const ct = String(hdrs["content-type"] || hdrs["Content-Type"] || "")
-      .toLowerCase();
-
+    // Parse body (form-encoded or JSON)
+    const ct = String(hdrs["content-type"] || hdrs["Content-Type"] || "").toLowerCase();
     let payload = {};
     if (ct.includes("application/x-www-form-urlencoded")) {
       const params = new URLSearchParams(event.body || "");
       payload = Object.fromEntries(params);
-      // capture multi-select checkboxes like role[]
-      payload["role[]"] = params.getAll("role[]");
+      payload["role[]"] = params.getAll("role[]"); // collect multi-select
     } else if (ct.includes("application/json")) {
       payload = JSON.parse(event.body || "{}");
     } else {
       return { statusCode: 415, headers: cors, body: "Unsupported content type" };
     }
 
-    // Honeypot (anti-bot)
+    // Honeypot
     if (payload["bot-field"]) {
       return { statusCode: 204, headers: cors, body: "" };
     }
 
-    // ---- Normalize & validate inputs ----
+    // ---- Normalize & validate ----
     const email = String(payload.email || "").trim();
-    const fullName = String(payload.name || "").trim(); // if your form uses a single "name" field
-    const first_name = fullName
-      ? fullName.split(/\s+/)[0]
-      : (payload.first_name || null);
-    const last_name = fullName
-      ? (fullName.split(/\s+/).slice(1).join(" ") || null)
-      : (payload.last_name || null);
+    const fullName = String(payload.name || "").trim();
+    const first_name = fullName ? fullName.split(/\s+/)[0] : (payload.first_name || null);
+    const last_name =
+      fullName ? (fullName.split(/\s+/).slice(1).join(" ") || null) : (payload.last_name || null);
 
-    // simple email check
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return { statusCode: 400, headers: cors, body: "Invalid email" };
     }
 
-    // role could be array (role[]) or single value (role)
     const roles = Array.isArray(payload["role[]"]) ? payload["role[]"] : [];
     const role = roles.length ? roles.join(", ") : (payload.role || null);
 
-    // derive IP & UA for your `ip` and `ua` columns
     const ip =
       hdrs["x-nf-client-connection-ip"] ||
       hdrs["client-ip"] ||
@@ -101,13 +90,11 @@ export async function handler(event) {
       hdrs["x-real-ip"] ||
       null;
 
-    const ua = String(hdrs["user-agent"] || "").slice(0, 255);
+    const ua = String(hdrs["user-agent"] || "");
 
-    // ---- Build row EXACTLY to your columns ----
-    // Columns you told me you have:
-    // id (uuid, default), first_name, last_name, email, role, state,
-    // organization, message, updates_opt_in (bool), ip, ua, created_at
+    // ---- Row must match your table columns exactly ----
     const row = {
+      id: randomUUID(), // optional: DB also has default gen_random_uuid()
       first_name,
       last_name,
       email,
@@ -126,11 +113,15 @@ export async function handler(event) {
       created_at: new Date().toISOString()
     };
 
-    // Insert
+    // Insert (DEBUG: echo DB error message if it fails)
     const { error } = await supabase.from(TABLE).insert(row);
     if (error) {
-      console.error("Database insert error:", error.message);
-      return { statusCode: 500, headers: cors, body: "Database insert failed" };
+      console.error("Insert error:", JSON.stringify(error)); // shows in Netlify Logs
+      return {
+        statusCode: 500,
+        headers: { ...cors, "Content-Type": "text/plain" },
+        body: error.message || "Database insert failed"
+      };
     }
 
     return {
