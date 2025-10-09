@@ -12,11 +12,11 @@
   <meta property="og:description" content="Join the early waitlist for Veteran Verify. Vendors and veterans: get updates and early access." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://veteranverify.net/" />
-  <meta property="og:image" content="/assets/images/logo.jpg" />
+  <meta property="og:image" content="assets/images/logo.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
 
   <!-- Favicon -->
-  <link rel="icon" href="/assets/images/logo.jpg" />
+  <link rel="icon" href="assets/images/logo.jpg" />
 
   <style>
     :root{
@@ -60,7 +60,17 @@
       display:flex; align-items:center; gap:12px;
       text-decoration:none; color:inherit;
     }
-    .brand img{width:36px; height:36px}
+
+    /* BIGGER LOGO */
+    .brand img{
+      height:48px;        /* bump size (try 56px if you want larger) */
+      width:auto;         /* keep aspect ratio */
+      object-fit:contain; /* avoid distortion */
+    }
+    @media (max-width:640px){
+      .brand img{ height:36px; }
+    }
+
     .brand .wordmark{
       font-weight:800; letter-spacing:0.2px;
       font-size:1.1rem;
@@ -134,15 +144,9 @@
       background:#e8f1ff; color:#0b2f83; border:1px solid #cfe0ff;
       font-weight:600;
     }
-.success.show {
-  display: block;
-  animation: fade-in 0.25s ease-out;
-}
+    .success.show{ display:block; animation:fade-in .25s ease-out; }
+    @keyframes fade-in{ from{opacity:0; transform:translateY(-4px)} to{opacity:1; transform:none} }
 
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: none; }
-}
     /* Sections */
     .section{padding:40px 20px}
     .grid-3{display:grid; gap:18px; grid-template-columns:1fr; margin-top:16px}
@@ -162,6 +166,7 @@
     }
   </style>
 </head>
+
 <body>
   <header class="site-header">
     <a class="brand" href="/">
