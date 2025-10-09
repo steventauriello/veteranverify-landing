@@ -12,7 +12,7 @@ const ALLOWED_ORIGINS = [
   "https://veteranverify.net",
   "https://www.veteranverify.net",
   "https://veteranverify.netlify.app",
-  "http://localhost:8888" // keep only if you actually use netlify dev
+  "http://localhost:8888" // keep only if you use netlify dev
 ];
 
 const okCors = (origin) => ({
@@ -27,25 +27,20 @@ export async function handler(event) {
   const allowed = ALLOWED_ORIGINS.some((o) => origin.startsWith(o));
   const cors = allowed ? okCors(origin) : {};
 
-  // Preflight
   if (event.httpMethod === "OPTIONS") {
     return { statusCode: 204, headers: cors, body: "" };
   }
-
-  // Method / origin checks
   if (!allowed) return { statusCode: 403, body: "Forbidden" };
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, headers: cors, body: "Method Not Allowed" };
   }
-
-  // Env vars check
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
     console.error("Missing Supabase env vars");
     return { statusCode: 500, headers: cors, body: "Server misconfigured" };
   }
 
   try {
-    // Parse body (supports form-encoded & JSON)
+    // Parse body
     const ct = (event.headers["content-type"] || "").toLowerCase();
     let payload = {};
     if (ct.includes("application/x-www-form-urlencoded")) {
@@ -63,7 +58,7 @@ export async function handler(event) {
       return { statusCode: 204, headers: cors, body: "" };
     }
 
-    // Validate inputs
+    // Validate
     const email = String(payload.email || "").trim();
     const name = String(payload.name || "").trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -75,8 +70,7 @@ export async function handler(event) {
     const roles = Array.isArray(payload["role[]"]) ? payload["role[]"] : [];
     const role = roles.length ? roles.join(", ") : (payload.role || null);
 
-    // Insert
-    const { error: insertErr } = await supabase.from("signups").insert({
+    const { error } = await supabase.from("signups").insert({
       first_name,
       last_name,
       email,
@@ -89,9 +83,8 @@ export async function handler(event) {
       referer: (event.headers["referer"] || "").slice(0, 255),
       created_at: new Date().toISOString(),
     });
-
-    if (insertErr) {
-      console.error("Database insert error:", insertErr.message);
+    if (error) {
+      console.error("Database insert error:", error.message);
       return { statusCode: 500, headers: cors, body: "Database insert failed" };
     }
 
