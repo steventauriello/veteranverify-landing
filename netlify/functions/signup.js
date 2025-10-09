@@ -14,7 +14,7 @@ const ALLOWED_ORIGINS = [
 const DEBUG = true;
 
 // ---------- ENV & CLIENT ----------
-const SUPABASE_URL = "https://hyuawfauycyeqbhfwxx.supabase.co".replace(/\/+$/, "");
+const SUPABASE_URL = (process.env.SUPABASE_URL || "").trim().replace(/\/*$/, "");
 const SERVICE_KEY   = (process.env.SUPABASE_SERVICE_KEY || "").trim();
 // read the secret from either name (lets you keep older deploys working too)
 const WEBHOOK_TOKEN = (process.env.FORM_WEBHOOK_SECRET || process.env.WEBHOOK_TOKEN || "").trim();
