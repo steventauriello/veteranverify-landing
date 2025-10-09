@@ -1,55 +1,87 @@
 // netlify/functions/signup.js
 import { createClient } from "@supabase/supabase-js";
 
-// ---------- CONFIG ----------
+/**
+ * DROP-IN CONFIG (adjust as needed)
+ */
 const TABLE = "signups";
-const ALLOWED_ORIGINS = [
-  "https://veteranverify.netlify.app",
-  "https://veteranverify.net",
-  "https://www.veteranverify.net",
-  "http://localhost:8888",
-];
+const SITE_SLUG = "veteranverify"; // your Netlify site name before .netlify.app
+const PROD_DOMAINS = ["veteranverify.net", "www.veteranverify.net"]; // your custom domains
+const DEBUG = true; // flip to false when stable
 
-// Flip to false after things are working
-const DEBUG = true;
+// Optional: hardcoded fallback for SUPABASE_URL (env var is preferred)
+const HARDCODED_SUPABASE_URL = "https://hyuawfauycyeqbhfwxx.supabase.co";
 
-// ---------- ENV & CLIENT ----------
-const SUPABASE_URL = (process.env.SUPABASE_URL || "").trim().replace(/\/+$/, "");
-const SERVICE_KEY   = (process.env.SUPABASE_SERVICE_KEY || "").trim();
-// read the secret from either name (lets you keep older deploys working too)
-const WEBHOOK_TOKEN = (process.env.FORM_WEBHOOK_SECRET || process.env.WEBHOOK_TOKEN || "").trim();
+/**
+ * ENV + CLIENT
+ */
+const SUPABASE_URL = (
+  (process.env.SUPABASE_URL || HARDCODED_SUPABASE_URL || "").trim()
+).replace(/\/+$/, "");
 
-const supabase = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
+const SERVICE_KEY = (process.env.SUPABASE_SERVICE_KEY || "").trim();
+const WEBHOOK_TOKEN = (
+  process.env.FORM_WEBHOOK_SECRET || process.env.WEBHOOK_TOKEN || ""
+).trim();
 
-// ---------- HELPERS ----------
+const supabase = createClient(SUPABASE_URL, SERVICE_KEY, {
+  auth: { persistSession: false },
+});
+
+/**
+ * HELPERS
+ */
 const log = (...a) => DEBUG && console.log("[signup]", ...a);
 
-const okCors = (origin) => ({
-  "Access-Control-Allow-Origin": origin,
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-  Vary: "Origin",
-});
+const isAllowedOrigin = (origin) => {
+  try {
+    const { hostname } = new URL(origin);
+
+    // Production Netlify domain for this site
+    if (hostname === `${SITE_SLUG}.netlify.app`) return true;
+
+    // Branch & deploy-preview domains, e.g. main--site.netlify.app, deploy-preview-23--site.netlify.app
+    if (hostname.endsWith(`--${SITE_SLUG}.netlify.app`)) return true;
+
+    // Your custom domains
+    if (PROD_DOMAINS.includes(hostname)) return true;
+
+    // Local dev
+    if (hostname === "localhost") return true;
+
+    return false;
+  } catch {
+    return false;
+  }
+};
 
 const isEmail = (s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s || "").trim());
 const asBool = (v) => v === true || v === "true" || v === "1" || v === "yes" || v === "on";
 
-const tryJson = (s) => {
-  try { return JSON.parse(s); } catch { return null; }
-};
+const tryJson = (s) => { try { return JSON.parse(s); } catch { return null; } };
 
 const getBodyString = (event) => {
   if (!event?.body) return "";
-  return event.isBase64Encoded ? Buffer.from(event.body, "base64").toString("utf8") : event.body;
+  return event.isBase64Encoded
+    ? Buffer.from(event.body, "base64").toString("utf8")
+    : event.body;
 };
 
 // Netlify form webhook payload can be:
 // { payload: { data: {...} } }  OR  { data: {...} }  OR  {...fields...}
-const pickNetlifyData = (obj) =>
-  obj?.payload?.data ?? obj?.data ?? obj;
+const pickNetlifyData = (obj) => obj?.payload?.data ?? obj?.data ?? obj;
 
-// ---------- HANDLER ----------
+/**
+ * HANDLER
+ */
 export async function handler(event) {
+  // ALWAYS log an entry so Netlify shows something even if CORS rejects later
+  console.log("[signup] invoked", {
+    time: new Date().toISOString(),
+    method: event.httpMethod,
+    path: event.path,
+  });
+
   const hdrs = event.headers || {};
   const origin = hdrs.origin || hdrs.Origin || hdrs.referer || hdrs.Referer || "";
   const hasOrigin = Boolean(origin);
@@ -62,25 +94,47 @@ export async function handler(event) {
   const token = url.searchParams.get("token") || url.searchParams.get("secret");
   const isWebhook = Boolean(token && WEBHOOK_TOKEN && token === WEBHOOK_TOKEN);
 
-  // CORS (browser only; webhooks usually have no Origin)
-  const allowedOrigin = hasOrigin && ALLOWED_ORIGINS.some((o) => origin.startsWith(o));
-  const cors = allowedOrigin ? okCors(origin) : {};
+  // CORS headers builder (strict for POST, permissive for OPTIONS below)
+  const allowedOrigin = hasOrigin && isAllowedOrigin(origin);
+  const strictCors = allowedOrigin
+    ? {
+        "Access-Control-Allow-Origin": origin,
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+        Vary: "Origin",
+      }
+    : {};
 
-  // Preflight
+  // OPTIONS: respond permissively so preflight doesn’t block logs during dev
   if (event.httpMethod === "OPTIONS") {
-    log("OPTIONS preflight");
-    return { statusCode: 204, headers: cors, body: "" };
+    log("OPTIONS preflight from:", origin || "(no origin)");
+    return {
+      statusCode: 204,
+      headers: {
+        "Access-Control-Allow-Origin": origin || "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers":
+          hdrs["access-control-request-headers"] || "Content-Type",
+        Vary: "Origin, Access-Control-Request-Headers",
+      },
+      body: "",
+    };
   }
 
-  // Require either allowed browser origin or valid webhook token
+  // Gate actual POSTs: require either allowed browser origin OR a valid webhook token
   if (!allowedOrigin && !isWebhook) {
-    log("Forbidden: allowedOrigin?", allowedOrigin, "isWebhook?", isWebhook);
-    return { statusCode: 403, headers: cors, body: "Forbidden" };
+    log("Forbidden POST - allowedOrigin?", allowedOrigin, "isWebhook?", isWebhook, "origin:", origin);
+    return { statusCode: 403, headers: strictCors, body: "Forbidden" };
   }
 
-  if (!SUPABASE_URL || !SERVICE_KEY) {
-    log("Missing Supabase env");
-    return { statusCode: 500, headers: cors, body: "Server misconfigured" };
+  // Validate Supabase config early with useful errors
+  if (!/^https:\/\/[^/]+\.supabase\.co$/.test(SUPABASE_URL)) {
+    console.error("[signup] Bad SUPABASE_URL value:", SUPABASE_URL);
+    return { statusCode: 500, headers: strictCors, body: "Server misconfigured (SUPABASE_URL)" };
+  }
+  if (!SERVICE_KEY) {
+    console.error("[signup] Missing SUPABASE_SERVICE_KEY");
+    return { statusCode: 500, headers: strictCors, body: "Server misconfigured (service key)" };
   }
 
   try {
@@ -100,21 +154,21 @@ export async function handler(event) {
       payload["role[]"] = params.getAll("role[]"); // capture multi-checkbox
       log("parsed form-encoded keys:", Object.keys(payload || {}));
     } else {
-      // Some services send JSON without a content-type; try anyway
+      // Try JSON anyway if content-type missing/wrong
       const maybe = tryJson(bodyStr);
       if (maybe) {
         payload = pickNetlifyData(maybe);
         log("parsed json (no ct) keys:", Object.keys(payload || {}));
       } else {
         log("Unsupported content type; returning 415");
-        return { statusCode: 415, headers: cors, body: "Unsupported content type" };
+        return { statusCode: 415, headers: strictCors, body: "Unsupported content type" };
       }
     }
 
     // Honeypot
     if (payload["bot-field"]) {
       log("honeypot hit; ignoring");
-      return { statusCode: 204, headers: cors, body: "" };
+      return { statusCode: 204, headers: strictCors, body: "" };
     }
 
     // ---- Normalize for your table ----
@@ -125,7 +179,7 @@ export async function handler(event) {
     const email = String(payload.email || "").trim();
     if (!isEmail(email) || email.toLowerCase() === "you@example.com") {
       log("invalid email:", email);
-      return { statusCode: 400, headers: cors, body: "Invalid email" };
+      return { statusCode: 400, headers: strictCors, body: "Invalid email" };
     }
 
     let role = null;
@@ -135,9 +189,9 @@ export async function handler(event) {
       role = String(payload.role);
     }
 
-    const state         = payload.state || null;
-    const organization  = payload.organization || null;
-    const message       = payload.message || null;
+    const state          = payload.state || null;
+    const organization   = payload.organization || null;
+    const message        = payload.message || null;
     const updates_opt_in = asBool(payload.updates) || asBool(payload.updates_opt_in);
 
     const ip =
@@ -166,18 +220,22 @@ export async function handler(event) {
     // ---- Insert ----
     const { data, error } = await supabase.from(TABLE).insert(row).select("id");
     if (error) {
-      log("Supabase insert error:", JSON.stringify(error));
-      return { statusCode: 500, headers: cors, body: error.message || "Database insert failed" };
+      console.error("[signup] Supabase insert error:", JSON.stringify(error));
+      return {
+        statusCode: 500,
+        headers: strictCors,
+        body: error.message || "Database insert failed",
+      };
     }
 
     log("inserted id:", data?.[0]?.id);
     return {
       statusCode: 200,
-      headers: { ...cors, "Content-Type": "application/json", "Cache-Control": "no-store" },
+      headers: { ...strictCors, "Content-Type": "application/json", "Cache-Control": "no-store" },
       body: JSON.stringify({ ok: true, id: data?.[0]?.id ?? null }),
     };
   } catch (err) {
-    log("Unhandled error:", err?.message || err);
-    return { statusCode: 500, headers: cors, body: "Server error" };
+    console.error("[signup] Unhandled error:", err?.message || err);
+    return { statusCode: 500, headers: strictCors, body: "Server error" };
   }
 }
