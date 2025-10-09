@@ -1,18 +1,19 @@
 // netlify/functions/signup.js
 import { createClient } from "@supabase/supabase-js";
 
-// Server-side Supabase client (service role; NEVER expose on client)
+const TABLE = "signups"; // change if your table name differs
+
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
+  process.env.SUPABASE_SERVICE_KEY // SERVICE ROLE key (server-side only)
 );
 
-// Allow only your domains (add/remove as needed)
+// add/remove your exact domains here
 const ALLOWED_ORIGINS = [
   "https://veteranverify.net",
   "https://www.veteranverify.net",
   "https://veteranverify.netlify.app",
-  "http://localhost:8888" // keep only if you use netlify dev
+  "http://localhost:8888" // keep only if you use `netlify dev`
 ];
 
 const okCors = (origin) => ({
@@ -27,26 +28,27 @@ export async function handler(event) {
   const allowed = ALLOWED_ORIGINS.some((o) => origin.startsWith(o));
   const cors = allowed ? okCors(origin) : {};
 
-  if (event.httpMethod === "OPTIONS") {
+  // CORS preflight
+  if (event.httpMethod === "OPTIONS")
     return { statusCode: 204, headers: cors, body: "" };
-  }
+
   if (!allowed) return { statusCode: 403, body: "Forbidden" };
-  if (event.httpMethod !== "POST") {
+  if (event.httpMethod !== "POST")
     return { statusCode: 405, headers: cors, body: "Method Not Allowed" };
-  }
+
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
     console.error("Missing Supabase env vars");
     return { statusCode: 500, headers: cors, body: "Server misconfigured" };
   }
 
   try {
-    // Parse body
+    // Parse body (form-encoded OR JSON)
     const ct = (event.headers["content-type"] || "").toLowerCase();
     let payload = {};
     if (ct.includes("application/x-www-form-urlencoded")) {
       const params = new URLSearchParams(event.body || "");
       payload = Object.fromEntries(params);
-      payload["role[]"] = params.getAll("role[]");
+      payload["role[]"] = params.getAll("role[]"); // if you ever use checkboxes
     } else if (ct.includes("application/json")) {
       payload = JSON.parse(event.body || "{}");
     } else {
@@ -58,19 +60,33 @@ export async function handler(event) {
       return { statusCode: 204, headers: cors, body: "" };
     }
 
-    // Validate
+    // Inputs: your form may have a single "name" field; split to first/last
     const email = String(payload.email || "").trim();
-    const name = String(payload.name || "").trim();
+    const fullName = String(payload.name || "").trim(); // if you have a single name input
+    const first_name = fullName ? fullName.split(/\s+/)[0] : (payload.first_name || null);
+    const last_name = fullName
+      ? (fullName.split(/\s+/).slice(1).join(" ") || null)
+      : (payload.last_name || null);
+
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return { statusCode: 400, headers: cors, body: "Invalid email" };
     }
-    const [first_name, ...rest] = name.split(/\s+/);
-    const last_name = rest.join(" ") || null;
 
     const roles = Array.isArray(payload["role[]"]) ? payload["role[]"] : [];
-    const role = roles.length ? roles.join(", ") : (payload.role || null);
+    const role  = roles.length ? roles.join(", ") : (payload.role || null);
 
-    const { error } = await supabase.from("signups").insert({
+    // Derive IP & UA
+    const ip =
+      event.headers["x-nf-client-connection-ip"] ||
+      event.headers["client-ip"] ||
+      (event.headers["x-forwarded-for"] || "").split(",")[0].trim() ||
+      event.headers["x-real-ip"] ||
+      null;
+
+    const ua = (event.headers["user-agent"] || "").slice(0, 255);
+
+    // EXACTLY your columns:
+    const row = {
       first_name,
       last_name,
       email,
@@ -78,13 +94,18 @@ export async function handler(event) {
       state: payload.state || null,
       organization: payload.organization || null,
       message: payload.message || null,
-      updates_opt_in: payload.updates === "yes",
-      user_agent: (event.headers["user-agent"] || "").slice(0, 255),
-      referer: (event.headers["referer"] || "").slice(0, 255),
+      updates_opt_in:
+        payload.updates === "yes" ||
+        payload.updates === "on"  ||
+        payload.updates === true,
+      ip,
+      ua,
       created_at: new Date().toISOString(),
-    });
+    };
+
+    const { error } = await supabase.from(TABLE).insert(row);
     if (error) {
-      console.error("Database insert error:", error.message);
+      console.error("Insert error:", error.message);
       return { statusCode: 500, headers: cors, body: "Database insert failed" };
     }
 
