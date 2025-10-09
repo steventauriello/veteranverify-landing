@@ -1,13 +1,16 @@
 // netlify/functions/signup.js
 import { createClient } from "@supabase/supabase-js";
+import * as dns from "node:dns";
+// Prefer IPv4 to avoid Undici/IPv6 hiccups in some regions.
+try { dns.setDefaultResultOrder?.("ipv4first"); } catch {}
 
 /* ===================== CONFIG ===================== */
 const TABLE = "signups";
-const SITE_SLUG = "veteranverify"; // your Netlify site name before .netlify.app
+const SITE_SLUG = "veteranverify";                   // your Netlify site name before .netlify.app
 const PROD_DOMAINS = ["veteranverify.net", "www.veteranverify.net"];
-const DEBUG = true; // flip to false once stable
+const DEBUG = true;                                  // flip to false when stable
 
-// Optional fallback (env still preferred)
+// Optional fallback; env still preferred.
 const HARDCODED_SUPABASE_URL = "https://hyuawfauycyeqbhfwxx.supabase.co";
 
 /* ================= ENV + CLIENT =================== */
@@ -15,21 +18,25 @@ const SUPABASE_URL = (
   (process.env.SUPABASE_URL || HARDCODED_SUPABASE_URL || "").trim()
 ).replace(/\/+$/, "");
 
-const SERVICE_KEY =
-  (process.env.SUPABASE_SERVICE_KEY ||
-   process.env.SUPABASE_SERVICE_ROLE_KEY ||
-   process.env.SUPABASE_SECRET ||
-   "").trim();
+const SERVICE_KEY = (
+  process.env.SUPABASE_SERVICE_KEY ||
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||   // common alias
+  process.env.SUPABASE_SECRET ||             // legacy alias
+  ""
+).trim();
 
-const WEBHOOK_TOKEN =
-  (process.env.FORM_WEBHOOK_SECRET || process.env.WEBHOOK_TOKEN || "").trim();
+const WEBHOOK_TOKEN = (
+  process.env.FORM_WEBHOOK_SECRET ||
+  process.env.WEBHOOK_TOKEN ||
+  ""
+).trim();
 
 const supabase = createClient(SUPABASE_URL, SERVICE_KEY, {
   auth: { persistSession: false },
 });
 
 /* ===================== HELPERS ==================== */
-const log = (...a) => DEBUG && console.log("[signup]", ...a);
+const log    = (...a) => DEBUG && console.log("[signup]", ...a);
 const errlog = (...a) => console.error("[signup]", ...a);
 
 const isEmail = (s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s || "").trim());
@@ -47,10 +54,10 @@ const pickNetlifyData = (obj) => obj?.payload?.data ?? obj?.data ?? obj;
 
 const isAllowedHostname = (h) => {
   if (!h) return false;
-  if (h === `${SITE_SLUG}.netlify.app`) return true;              // prod .netlify.app
-  if (h.endsWith(`--${SITE_SLUG}.netlify.app`)) return true;      // branch / deploy-preview
-  if (PROD_DOMAINS.includes(h)) return true;                      // custom domains
-  if (h === "localhost" || h === "127.0.0.1") return true;        // local dev
+  if (h === `${SITE_SLUG}.netlify.app`) return true;           // prod .netlify.app
+  if (h.endsWith(`--${SITE_SLUG}.netlify.app`)) return true;   // branch / deploy-preview
+  if (PROD_DOMAINS.includes(h)) return true;                   // custom domains
+  if (h === "localhost" || h === "127.0.0.1") return true;     // local dev
   return false;
 };
 
@@ -65,7 +72,7 @@ const getRequestOrigin = (headers) => {
 
 /* ===================== HANDLER ==================== */
 export async function handler(event) {
-  // Always log an entry so you can see activity in Netlify
+  // Always log one line so Netlify function logs show activity
   console.log("[signup] invoked", {
     t: new Date().toISOString(),
     method: event.httpMethod,
@@ -87,7 +94,7 @@ export async function handler(event) {
   const token = url.searchParams.get("token") || url.searchParams.get("secret");
   const isWebhook = Boolean(token && WEBHOOK_TOKEN && token === WEBHOOK_TOKEN);
 
-  // Strict CORS headers (used for POST responses)
+  // Strict CORS headers for POST responses
   const strictCors = allowedOrigin
     ? {
         "Access-Control-Allow-Origin": requestOrigin,
@@ -116,7 +123,7 @@ export async function handler(event) {
     };
   }
 
-  // Gate POSTs: require allowed browser origin OR valid webhook token
+  // Gate POSTs: require allowed browser origin OR a valid webhook token
   if (!allowedOrigin && !isWebhook) {
     log("403 Forbidden", { requestOrigin, requestHostname, isWebhook });
     return { statusCode: 403, headers: strictCors, body: "Forbidden" };
@@ -132,7 +139,7 @@ export async function handler(event) {
     return { statusCode: 500, headers: strictCors, body: "Server misconfigured (service key)" };
   }
 
-  // ---- Quick connectivity probe to surface DNS/IPv6 issues ----
+  // ---- Quick connectivity probe (surfaces DNS/IPv6 issues) ----
   try {
     console.log("[signup] SUPABASE_URL host:", new URL(SUPABASE_URL).host);
     console.log("[signup] SERVICE_KEY length:", SERVICE_KEY.length);
@@ -160,7 +167,7 @@ export async function handler(event) {
     } else if (ct.includes("application/x-www-form-urlencoded")) {
       const params = new URLSearchParams(bodyStr || "");
       payload = Object.fromEntries(params);
-      payload["role[]"] = params.getAll("role[]"); // multi-checkbox
+      payload["role[]"] = params.getAll("role[]"); // capture multi-checkbox
       log("parsed form-encoded keys:", Object.keys(payload || {}));
     } else {
       const maybe = tryJson(bodyStr);
