@@ -1,65 +1,61 @@
 // netlify/functions/signup.js
-import { createClient } from "@supabase/supabase-js";
-import { randomUUID } from "node:crypto"; // optional: generate id in code too
+import { randomUUID } from "node:crypto";
 
-// --- CONFIG ---
+// ======= CONFIG =======
 const TABLE = "signups";
-
-// Domains allowed to call this function
 const ALLOWED_ORIGINS = [
   "https://veteranverify.net",
   "https://www.veteranverify.net",
   "https://veteranverify.netlify.app",
-  "http://localhost:8888" // keep only if you use `netlify dev`
+  "http://localhost:8888", // keep only if you use `netlify dev`
 ];
 
-// CORS helper
-const okCors = (origin) => ({
+// allow Netlify deploy previews like https://deploy-preview-12--veteranverify.netlify.app
+function isAllowedOrigin(origin) {
+  if (!origin) return false;
+  if (ALLOWED_ORIGINS.some((o) => origin.startsWith(o))) return true;
+  try {
+    const host = new URL(origin).hostname;
+    return /^deploy-preview-\d+--veteranverify\.netlify\.app$/.test(host);
+  } catch {
+    return false;
+  }
+}
+
+const corsHeaders = (origin) => ({
   "Access-Control-Allow-Origin": origin,
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
-  Vary: "Origin"
+  Vary: "Origin",
 });
 
-// --- SUPABASE SERVER CLIENT (uses Netlify env vars) ---
-const SUPABASE_URL = (process.env.SUPABASE_URL || "").trim().replace(/\/+$/, "");
-const SERVICE_KEY  = (process.env.SUPABASE_SERVICE_KEY || "").trim();
-
-const supabase = createClient(SUPABASE_URL, SERVICE_KEY, {
-  auth: { persistSession: false }
-});
-
+// ======= HANDLER =======
 export async function handler(event) {
   const hdrs = event.headers || {};
-  const origin =
-    hdrs.origin || hdrs.Origin || hdrs.referer || hdrs.Referer || "";
+  const origin = hdrs.origin || hdrs.Origin || hdrs.referer || hdrs.Referer || "";
+  const allowed = isAllowedOrigin(origin);
+  const cors = allowed ? corsHeaders(origin) : {};
 
-  const allowed = ALLOWED_ORIGINS.some((o) => origin.startsWith(o));
-  const cors = allowed ? okCors(origin) : {};
-
-  // Preflight
-  if (event.httpMethod === "OPTIONS") {
-    return { statusCode: 204, headers: cors, body: "" };
-  }
-
-  // Guardrails
+  if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers: cors, body: "" };
   if (!allowed) return { statusCode: 403, body: "Forbidden" };
-  if (event.httpMethod !== "POST") {
-    return { statusCode: 405, headers: cors, body: "Method Not Allowed" };
-  }
+  if (event.httpMethod !== "POST") return { statusCode: 405, headers: cors, body: "Method Not Allowed" };
+
+  // Clean env (trim & remove trailing slashes)
+  const SUPABASE_URL = (process.env.SUPABASE_URL || "").trim().replace(/\/+$/, "");
+  const SERVICE_KEY  = (process.env.SUPABASE_SERVICE_KEY || "").trim();
   if (!SUPABASE_URL || !SERVICE_KEY) {
     console.error("Missing SUPABASE_URL or SUPABASE_SERVICE_KEY");
     return { statusCode: 500, headers: cors, body: "Server misconfigured" };
   }
 
   try {
-    // Parse body (form-encoded or JSON)
+    // ---- Parse body (form-encoded or JSON) ----
     const ct = String(hdrs["content-type"] || hdrs["Content-Type"] || "").toLowerCase();
     let payload = {};
     if (ct.includes("application/x-www-form-urlencoded")) {
       const params = new URLSearchParams(event.body || "");
       payload = Object.fromEntries(params);
-      payload["role[]"] = params.getAll("role[]"); // collect multi-select
+      payload["role[]"] = params.getAll("role[]"); // collect multi-select checkboxes
     } else if (ct.includes("application/json")) {
       payload = JSON.parse(event.body || "{}");
     } else {
@@ -67,15 +63,13 @@ export async function handler(event) {
     }
 
     // Honeypot
-    if (payload["bot-field"]) {
-      return { statusCode: 204, headers: cors, body: "" };
-    }
+    if (payload["bot-field"]) return { statusCode: 204, headers: cors, body: "" };
 
     // ---- Normalize & validate ----
     const email = String(payload.email || "").trim();
     const fullName = String(payload.name || "").trim();
     const first_name = fullName ? fullName.split(/\s+/)[0] : (payload.first_name || null);
-    const last_name =
+    const last_name  =
       fullName ? (fullName.split(/\s+/).slice(1).join(" ") || null) : (payload.last_name || null);
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -94,9 +88,11 @@ export async function handler(event) {
 
     const ua = String(hdrs["user-agent"] || "");
 
-    // ---- Row must match your table columns exactly ----
+    // ---- Build row to match your columns exactly ----
+    // Columns: id (uuid), first_name, last_name, email, role, state, organization,
+    //          message, updates_opt_in (bool), ip, ua, created_at (timestamp)
     const row = {
-      id: randomUUID(), // optional: DB also has default gen_random_uuid()
+      id: randomUUID(), // DB also has default; this is a belt-and-suspenders
       first_name,
       last_name,
       email,
@@ -112,28 +108,36 @@ export async function handler(event) {
         payload.updates === "1",
       ip,
       ua,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
     };
 
- // Insert and return the inserted row (so we can confirm it)
-const { data, error } = await supabase
-  .from(TABLE)
-  .insert(row)
-  .select(); // returns the new row(s)
+    // ---- Insert via Supabase REST (PostgREST) ----
+    const resp = await fetch(`${SUPABASE_URL}/rest/v1/${TABLE}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Prefer": "return=representation",
+        apikey: SERVICE_KEY,
+        Authorization: `Bearer ${SERVICE_KEY}`,
+      },
+      body: JSON.stringify([row]), // array form = bulk insert API; returns inserted rows
+    });
 
-if (error) {
-  console.error("Insert error:", JSON.stringify(error));
-  // Surface the reason during debugging; you can change this back to a generic message later
-  return { statusCode: 500, headers: cors, body: error.message || "Database insert failed" };
-}
+    const text = await resp.text();
 
-// Success
-return {
-  statusCode: 200,
-  headers: { ...cors, "Content-Type": "application/json", "Cache-Control": "no-store" },
-  body: JSON.stringify({ ok: true, id: data?.[0]?.id ?? null })
-};
+    if (!resp.ok) {
+      console.error("Supabase insert failed:", resp.status, text.slice(0, 500));
+      return { statusCode: 500, headers: cors, body: "Database insert failed" };
+    }
 
+    let data = null;
+    try { data = JSON.parse(text); } catch {}
+
+    return {
+      statusCode: 200,
+      headers: { ...cors, "Content-Type": "application/json", "Cache-Control": "no-store" },
+      body: JSON.stringify({ ok: true, id: data?.[0]?.id ?? null }),
+    };
   } catch (err) {
     console.error("Unhandled error:", err);
     return { statusCode: 500, headers: cors, body: "Server error" };
