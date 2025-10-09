@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = new FormData(form);
       const body = new URLSearchParams([...data]).toString();
 
-      // 1) Supabase via Netlify Function
+      // 1) Write to Supabase via Netlify Function
       const res = await fetch("/.netlify/functions/signup", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       if (!res.ok) throw new Error("Function failed");
 
-      // 2) Netlify Forms (email notification) — AJAX ping
+      // 2) Trigger Netlify Forms email (no page reload)
       await fetch("/", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -37,6 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ok.setAttribute("role", "alert");
         ok.scrollIntoView({ behavior: "smooth", block: "center" });
       }
+      // avoid refresh-resubmit duplicates
       history.replaceState(null, "", window.location.pathname);
     } catch (err) {
       console.error(err);
