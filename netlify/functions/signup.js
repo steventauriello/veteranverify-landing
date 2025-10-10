@@ -1,8 +1,13 @@
 // netlify/functions/signup.js
 // ESM ("type":"module" in package.json)
+
 import { createClient } from "@supabase/supabase-js";
 import { Pool } from "pg";
 import * as dns from "node:dns";
+
+// Force SSL for Supabase pooler in serverless
+process.env.PGSSLMODE = "require";
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 try { dns.setDefaultResultOrder?.("ipv4first"); } catch {}
 
