@@ -193,19 +193,14 @@
           <h2 id="join" style="margin:0 0 8px 0; font-size:1.25rem;">Join the early access list</h2>
           <div id="form-success" class="success" role="status" aria-live="polite">Thanks—you're on the list! We’ll email you with next steps.</div>
 
-          <!-- Netlify form: works with/without JS -->
-          <form
-  name="vv-waitlist"
-  netlify
-  data-netlify="true"
-  netlify-honeypot="bot-field"
-  accept-charset="UTF-8">
-
-            <input type="hidden" name="form-name" value="vv-waitlist" />
-            <input type="hidden" name="subject" value="New Veteran Verify early-access signup" />
-
+          <!-- CHANGED: post directly to the Netlify Function (no Netlify Forms) -->
+          <form id="signup"
+                action="/.netlify/functions/signup"
+                method="POST"
+                accept-charset="UTF-8">
+            <!-- keep a honeypot; our function ignores submissions if this is filled -->
             <p style="display:none;">
-              <label>Don’t fill this out: <input name="bot-field" /></label>
+              <label>Don’t fill this out: <input name="bot-field" autocomplete="off" /></label>
             </p>
 
             <div class="row">
@@ -277,6 +272,6 @@
 
   <footer>© <span id="yr"></span> VeteranVerify.net — All rights reserved.</footer>
 
-<script src="/script.js" defer></script>
+  <script src="/script.js" defer></script>
 </body>
 </html>
