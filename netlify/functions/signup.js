@@ -31,9 +31,24 @@ const supabase = (SUPABASE_URL && SERVICE_KEY)
   ? createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } })
   : null;
 
-const pool = DB_URL
-  ? new Pool({ connectionString: DB_URL, ssl: { rejectUnauthorized: false } })
-  : null;
+// REPLACE the existing "const pool = ..." with this:
+let pool = null;
+if (DB_URL) {
+  try {
+    const u = new URL(DB_URL);
+    pool = new Pool({
+      host: u.hostname,
+      port: Number(u.port) || 5432,
+      user: decodeURIComponent(u.username),
+      password: decodeURIComponent(u.password),
+      database: (u.pathname || "/postgres").slice(1),
+      // Force TLS, skip CA verification (resolves self-signed cert error)
+      ssl: { require: true, rejectUnauthorized: false },
+    });
+  } catch (e) {
+    log("DB URL parse error:", e?.message || e);
+  }
+}
 
 /* ================== HELPERS ================== */
 const log = (...a) => DEBUG && console.log("[signup]", ...a);
