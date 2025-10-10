@@ -1,42 +1,54 @@
 // netlify/functions/signup.js
 import { createClient } from "@supabase/supabase-js";
 import * as dns from "node:dns";
-// Prefer IPv4 to avoid Undici/IPv6 hiccups in some regions.
 try { dns.setDefaultResultOrder?.("ipv4first"); } catch {}
+
+import pg from "pg";
+const { Pool } = pg;
 
 /* ===================== CONFIG ===================== */
 const TABLE = "signups";
-const SITE_SLUG = "veteranverify";                   // your Netlify site name before .netlify.app
+const SITE_SLUG = "veteranverify"; // your Netlify site before .netlify.app
 const PROD_DOMAINS = ["veteranverify.net", "www.veteranverify.net"];
-const DEBUG = true;                                  // flip to false when stable
-
-// Optional fallback; env still preferred.
+const DEBUG = true; // flip to false when stable
 const HARDCODED_SUPABASE_URL = "https://hyuawfauycyeqbhfwxx.supabase.co";
 
-/* ================= ENV + CLIENT =================== */
+/* ================= ENV ============================ */
 const SUPABASE_URL = (
   (process.env.SUPABASE_URL || HARDCODED_SUPABASE_URL || "").trim()
 ).replace(/\/+$/, "");
 
 const SERVICE_KEY = (
   process.env.SUPABASE_SERVICE_KEY ||
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||   // common alias
-  process.env.SUPABASE_SECRET ||             // legacy alias
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_SECRET ||
   ""
 ).trim();
+
+const DB_URL = (process.env.SUPABASE_DB_URL || process.env.DATABASE_URL || "").trim();
 
 const WEBHOOK_TOKEN = (
-  process.env.FORM_WEBHOOK_SECRET ||
-  process.env.WEBHOOK_TOKEN ||
-  ""
+  process.env.FORM_WEBHOOK_SECRET || process.env.WEBHOOK_TOKEN || ""
 ).trim();
 
+/* ============== CLIENTS (global reuse) ============ */
 const supabase = createClient(SUPABASE_URL, SERVICE_KEY, {
   auth: { persistSession: false },
 });
 
+let pool = null;
+if (DB_URL) {
+  pool = new Pool({
+    connectionString: DB_URL,
+    ssl: { rejectUnauthorized: false },   // works with ?sslmode=require
+    max: 3,
+    idleTimeoutMillis: 10_000,
+    connectionTimeoutMillis: 5_000,
+  });
+}
+
 /* ===================== HELPERS ==================== */
-const log    = (...a) => DEBUG && console.log("[signup]", ...a);
+const log = (...a) => DEBUG && console.log("[signup]", ...a);
 const errlog = (...a) => console.error("[signup]", ...a);
 
 const isEmail = (s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s || "").trim());
@@ -49,15 +61,14 @@ const getBodyString = (event) =>
     ? Buffer.from(event.body, "base64").toString("utf8")
     : event.body);
 
-// Netlify form webhook payload can be: {payload:{data:{...}}} OR {data:{...}} OR {...fields...}
 const pickNetlifyData = (obj) => obj?.payload?.data ?? obj?.data ?? obj;
 
 const isAllowedHostname = (h) => {
   if (!h) return false;
-  if (h === `${SITE_SLUG}.netlify.app`) return true;           // prod .netlify.app
-  if (h.endsWith(`--${SITE_SLUG}.netlify.app`)) return true;   // branch / deploy-preview
-  if (PROD_DOMAINS.includes(h)) return true;                   // custom domains
-  if (h === "localhost" || h === "127.0.0.1") return true;     // local dev
+  if (h === `${SITE_SLUG}.netlify.app`) return true;
+  if (h.endsWith(`--${SITE_SLUG}.netlify.app`)) return true; // branch/preview
+  if (PROD_DOMAINS.includes(h)) return true;
+  if (h === "localhost" || h === "127.0.0.1") return true;
   return false;
 };
 
@@ -70,9 +81,50 @@ const getRequestOrigin = (headers) => {
   try { return new URL(r).origin; } catch { return null; }
 };
 
+/* ============== REST vs SQL helpers =============== */
+async function restPing() {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/`, {
+      method: "HEAD",
+      headers: { apikey: SERVICE_KEY, authorization: `Bearer ${SERVICE_KEY}` },
+    });
+    return r.ok || r.status === 404; // any response means reachable
+  } catch (e) {
+    errlog("REST ping failed:", e?.message || e);
+    return false;
+  }
+}
+
+async function insertViaREST(row) {
+  const { data, error } = await supabase.from(TABLE).insert(row).select("id");
+  if (error) throw new Error(error.message || "REST insert failed");
+  return data?.[0]?.id ?? null;
+}
+
+async function insertViaSQL(row) {
+  if (!pool) throw new Error("SQL pool not configured (SUPABASE_DB_URL missing)");
+  const client = await pool.connect();
+  try {
+    const q = `
+      insert into public.${TABLE}
+        (first_name, last_name, email, role, state, organization, message, updates_opt_in, ip, ua)
+      values
+        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+      returning id
+    `;
+    const vals = [
+      row.first_name, row.last_name, row.email, row.role, row.state,
+      row.organization, row.message, row.updates_opt_in, row.ip, row.ua
+    ];
+    const { rows } = await client.query(q, vals);
+    return rows?.[0]?.id ?? null;
+  } finally {
+    client.release();
+  }
+}
+
 /* ===================== HANDLER ==================== */
 export async function handler(event) {
-  // Always log one line so Netlify function logs show activity
   console.log("[signup] invoked", {
     t: new Date().toISOString(),
     method: event.httpMethod,
@@ -86,7 +138,7 @@ export async function handler(event) {
   try { requestHostname = requestOrigin ? new URL(requestOrigin).hostname : null; } catch {}
   const allowedOrigin = !!requestHostname && isAllowedHostname(requestHostname);
 
-  // Build URL so we can read ?token for webhooks
+  // Build URL for webhook token
   const rawUrl =
     event.rawUrl ||
     `https://${hdrs.host}${event.path}${event.rawQuery ? `?${event.rawQuery}` : ""}`;
@@ -94,7 +146,7 @@ export async function handler(event) {
   const token = url.searchParams.get("token") || url.searchParams.get("secret");
   const isWebhook = Boolean(token && WEBHOOK_TOKEN && token === WEBHOOK_TOKEN);
 
-  // Strict CORS headers for POST responses
+  // CORS
   const strictCors = allowedOrigin
     ? {
         "Access-Control-Allow-Origin": requestOrigin,
@@ -104,9 +156,8 @@ export async function handler(event) {
       }
     : {};
 
-  // OPTIONS preflight — permissive so debugging never dies at preflight
+  // Preflight
   if (event.httpMethod === "OPTIONS") {
-    log("OPTIONS preflight from:", requestOrigin || "(no origin)");
     const acrh =
       hdrs["access-control-request-headers"] ||
       hdrs["Access-Control-Request-Headers"] ||
@@ -123,42 +174,27 @@ export async function handler(event) {
     };
   }
 
-  // Gate POSTs: require allowed browser origin OR a valid webhook token
+  // Gate POSTs
   if (!allowedOrigin && !isWebhook) {
     log("403 Forbidden", { requestOrigin, requestHostname, isWebhook });
     return { statusCode: 403, headers: strictCors, body: "Forbidden" };
   }
 
-  // Validate Supabase config early with explicit errors
+  // Validate config (REST path)
   if (!/^https:\/\/[^/]+\.supabase\.co$/.test(SUPABASE_URL)) {
     errlog("Bad SUPABASE_URL value:", SUPABASE_URL);
-    return { statusCode: 500, headers: strictCors, body: "Server misconfigured (SUPABASE_URL)" };
+    // keep going; SQL might still be configured
   }
   if (!SERVICE_KEY) {
     errlog("Missing SUPABASE_SERVICE_KEY");
-    return { statusCode: 500, headers: strictCors, body: "Server misconfigured (service key)" };
+    // keep going; SQL might still be configured
   }
 
-  // ---- Quick connectivity probe (surfaces DNS/IPv6 issues) ----
+  // ---- Parse body ----
   try {
-    console.log("[signup] SUPABASE_URL host:", new URL(SUPABASE_URL).host);
-    console.log("[signup] SERVICE_KEY length:", SERVICE_KEY.length);
-    const ping = await fetch(`${SUPABASE_URL}/rest/v1/`, {
-      method: "HEAD",
-      headers: { apikey: SERVICE_KEY, authorization: `Bearer ${SERVICE_KEY}` },
-    });
-    console.log("[signup] REST ping status:", ping.status);
-  } catch (e) {
-    errlog("REST ping failed:", e?.message || e);
-    // Common fix: set Netlify env NODE_OPTIONS="--dns-result-order=ipv4first"
-    return { statusCode: 502, headers: strictCors, body: "Supabase REST unreachable" };
-  }
-
-  try {
-    // ---- Parse body ----
     const ct = String(hdrs["content-type"] || hdrs["Content-Type"] || "").toLowerCase();
     const bodyStr = getBodyString(event);
-    log("content-type:", ct || "(none)", "| bytes:", bodyStr.length, "| webhook:", isWebhook);
+    log("content-type:", ct || "(none)", "| bytes:", bodyStr.length);
 
     let payload = {};
     if (ct.includes("application/json")) {
@@ -167,7 +203,7 @@ export async function handler(event) {
     } else if (ct.includes("application/x-www-form-urlencoded")) {
       const params = new URLSearchParams(bodyStr || "");
       payload = Object.fromEntries(params);
-      payload["role[]"] = params.getAll("role[]"); // capture multi-checkbox
+      payload["role[]"] = params.getAll("role[]");
       log("parsed form-encoded keys:", Object.keys(payload || {}));
     } else {
       const maybe = tryJson(bodyStr);
@@ -175,7 +211,6 @@ export async function handler(event) {
         payload = pickNetlifyData(maybe);
         log("parsed json (no ct) keys:", Object.keys(payload || {}));
       } else {
-        log("Unsupported content type; returning 415");
         return { statusCode: 415, headers: strictCors, body: "Unsupported content type" };
       }
     }
@@ -186,14 +221,13 @@ export async function handler(event) {
       return { statusCode: 204, headers: strictCors, body: "" };
     }
 
-    // ---- Normalize for your table ----
+    // Normalize row
     const fullName = String(payload.name || "").trim();
     const first_name = fullName ? fullName.split(/\s+/)[0] : (payload.first_name || null);
     const last_name  = fullName ? (fullName.split(/\s+/).slice(1).join(" ") || null) : (payload.last_name || null);
 
     const email = String(payload.email || "").trim();
     if (!isEmail(email) || email.toLowerCase() === "you@example.com") {
-      log("invalid email:", email);
       return { statusCode: 400, headers: strictCors, body: "Invalid email" };
     }
 
@@ -218,40 +252,40 @@ export async function handler(event) {
     const ua = String(hdrs["user-agent"] || "");
 
     const row = {
-      first_name,
-      last_name,
-      email,
-      role,
-      state,
-      organization,
-      message,
-      updates_opt_in,
-      ip,
-      ua,
+      first_name, last_name, email, role, state,
+      organization, message, updates_opt_in, ip, ua,
     };
 
-    log("inserting row (email):", email);
+    // Decide driver: try REST if reachable; otherwise SQL
+    let id = null;
+    const restOK = await restPing();
+    log("REST reachable?", restOK, "| SQL configured?", Boolean(pool));
 
-    // ---- Insert ----
-    const { data, error } = await supabase.from(TABLE).insert(row).select("id");
-    if (error) {
-      errlog("Supabase insert error:", JSON.stringify(error));
-      return {
-        statusCode: 500,
-        headers: strictCors,
-        body: error.message || "Database insert failed",
-      };
+    if (restOK && SERVICE_KEY) {
+      try {
+        log("Using REST insert");
+        id = await insertViaREST(row);
+      } catch (e) {
+        errlog("REST insert failed, will try SQL:", e?.message || e);
+        if (pool) {
+          log("Falling back to SQL insert");
+          id = await insertViaSQL(row);
+        } else {
+          throw e;
+        }
+      }
+    } else if (pool) {
+      log("Using SQL insert");
+      id = await insertViaSQL(row);
+    } else {
+      return { statusCode: 500, headers: strictCors, body: "No database path available" };
     }
 
-    log("inserted id:", data?.[0]?.id);
+    log("inserted id:", id);
     return {
       statusCode: 200,
-      headers: {
-        ...strictCors,
-        "Content-Type": "application/json",
-        "Cache-Control": "no-store",
-      },
-      body: JSON.stringify({ ok: true, id: data?.[0]?.id ?? null }),
+      headers: { ...strictCors, "Content-Type": "application/json", "Cache-Control": "no-store" },
+      body: JSON.stringify({ ok: true, id }),
     };
   } catch (e) {
     errlog("Unhandled error:", e?.message || e);
