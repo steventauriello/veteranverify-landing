@@ -216,9 +216,15 @@ export async function handler(event) {
         body: JSON.stringify({ ok: true, via: "sql_upsert", ...(saved || {}) }),
       };
     } catch (e) {
-      log("SQL upsert error:", e?.message || e);
-      return { statusCode: 500, headers: cors, body: "Database insert failed" };
-    }
+  const msg = e?.message || String(e);
+  log("SQL upsert error:", msg);
+  return {
+    statusCode: 500,
+    headers: { ...cors, "Content-Type": "application/json" },
+    body: JSON.stringify({ ok: false, via: "sql_error", error: msg })
+  };
+}
+
   } catch (err) {
     log("Unhandled error:", err?.message || err);
     return { statusCode: 500, headers: cors, body: "Server error" };
