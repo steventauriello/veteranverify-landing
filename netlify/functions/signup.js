@@ -1,4 +1,4 @@
-// netlify/functions/signup.js  (rename to signin.js if you prefer)
+// netlify/functions/signup.js
 // ESM (package.json has "type":"module")
 
 import { createClient } from "@supabase/supabase-js";
@@ -31,7 +31,7 @@ const supabase = (SUPABASE_URL && SERVICE_KEY)
   ? createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } })
   : null;
 
-// REPLACE the existing "const pool = ..." with this:
+// Explicit Pool config + TLS to avoid self-signed cert errors
 let pool = null;
 if (DB_URL) {
   try {
@@ -42,11 +42,10 @@ if (DB_URL) {
       user: decodeURIComponent(u.username),
       password: decodeURIComponent(u.password),
       database: (u.pathname || "/postgres").slice(1),
-      // Force TLS, skip CA verification (resolves self-signed cert error)
       ssl: { require: true, rejectUnauthorized: false },
     });
   } catch (e) {
-    log("DB URL parse error:", e?.message || e);
+    console.log("[signup] DB URL parse error:", e?.message || e);
   }
 }
 
@@ -80,29 +79,29 @@ export async function handler(event) {
   const origin = hdrs.origin || hdrs.Origin || hdrs.referer || hdrs.Referer || "";
   const hasOrigin = Boolean(origin);
 
-  // Build URL so we can read ?token
+  // Compose raw URL so we can read ?token
   const rawUrl = event.rawUrl || `https://${hdrs.host}${event.path}${event.rawQuery ? `?${event.rawQuery}` : ""}`;
   const url = new URL(rawUrl);
   const token = url.searchParams.get("token") || url.searchParams.get("secret");
   const isWebhook = Boolean(token && WEBHOOK_TOKEN && token === WEBHOOK_TOKEN);
 
-  // CORS (webhooks typically have no Origin)
+  // CORS (browser only; webhooks usually have no Origin)
   const allowedOrigin = hasOrigin && ALLOWED_ORIGINS.some((o) => origin.startsWith(o));
   const cors = allowedOrigin ? okCors(origin) : {};
 
-  // OPTIONS preflight
+  // Preflight
   if (event.httpMethod === "OPTIONS") {
     log("OPTIONS preflight");
     return { statusCode: 204, headers: cors, body: "" };
   }
 
-  // Require allowed Origin or a valid webhook token
+  // Require either allowed browser origin or valid webhook token
   if (!allowedOrigin && !isWebhook) {
     log("403 Forbidden { requestOrigin:", hasOrigin ? origin : null, ", isWebhook:", isWebhook, "}");
     return { statusCode: 403, headers: cors, body: "Forbidden" };
   }
 
-  // Basic env sanity check
+  // Notes
   if (!SUPABASE_URL || !SERVICE_KEY) log("Note: REST client not fully configured");
   if (!DB_URL) log("Note: SQL pool not configured");
   try {
@@ -126,10 +125,9 @@ export async function handler(event) {
     } else if (ct.includes("application/x-www-form-urlencoded")) {
       const params = new URLSearchParams(bodyStr || "");
       payload = Object.fromEntries(params);
-      payload["role[]"] = params.getAll("role[]"); // multi-checkbox capture
+      payload["role[]"] = params.getAll("role[]"); // capture multi-checkbox
       log("parsed form-encoded keys:", Object.keys(payload || {}));
     } else {
-      // Try JSON even with missing/incorrect content-type (some services do this)
       const maybe = tryJson(bodyStr);
       if (maybe) {
         payload = pickNetlifyData(maybe);
@@ -146,13 +144,14 @@ export async function handler(event) {
       return { statusCode: 204, headers: cors, body: "" };
     }
 
-    /* ---------- Normalize to table schema ---------- */
+    /* ---------- Normalize for your table (Option B upsert) ---------- */
     const fullName = String(payload.name || "").trim();
     const first_name = fullName ? fullName.split(/\s+/)[0] : (payload.first_name || null);
     const last_name  = fullName ? (fullName.split(/\s+/).slice(1).join(" ") || null) : (payload.last_name || null);
 
-    const email = String(payload.email || "").trim();
-    if (!isEmail(email) || email.toLowerCase() === "you@example.com") {
+    // normalize email to lowercase so dedupe works reliably
+    const email = String(payload.email || "").trim().toLowerCase();
+    if (!isEmail(email) || email === "you@example.com") {
       log("invalid email:", email);
       return { statusCode: 400, headers: cors, body: "Invalid email" };
     }
@@ -177,57 +176,94 @@ export async function handler(event) {
 
     const ua = String(hdrs["user-agent"] || "");
 
-    const row = { first_name, last_name, email, role, state, organization, message, updates_opt_in, ip, ua };
-    log("inserting row (email):", email);
+    log("inserting/updating (email):", email);
 
-    /* ---------- Try REST insert first ---------- */
+    /* ---------- Try REST upsert first (requires unique on email; ok if it fails) ---------- */
     if (supabase) {
       try {
-        const { data, error } = await supabase.from(TABLE).insert(row).select("id").single();
+        const { data, error } = await supabase
+          .from(TABLE)
+          .upsert(
+            { first_name, last_name, email, role, state, organization, message, updates_opt_in, ip, ua },
+            { onConflict: "email" }
+          )
+          .select("id")
+          .single();
         if (error) throw error;
-        log("REST insert ok, id:", data?.id);
+        log("REST upsert ok, id:", data?.id);
         return {
           statusCode: 200,
           headers: { ...cors, "Content-Type": "application/json", "Cache-Control": "no-store" },
           body: JSON.stringify({ ok: true, id: data?.id ?? null, via: "rest" }),
         };
       } catch (e) {
-        log("REST insert failed:", e?.message || e);
+        log("REST upsert failed:", e?.message || e);
         // fall through to SQL
       }
     } else {
       log("REST client not available; skipping");
     }
 
-    /* ---------- SQL fallback (Transaction Pooler) ---------- */
+    /* ---------- SQL Option B upsert (works even without a unique constraint) ---------- */
     if (!pool) {
       log("No SQL pool configured");
       return { statusCode: 502, headers: cors, body: "Supabase REST unreachable" };
     }
 
-    const sql = `
-      insert into public.${TABLE}
-        (first_name, last_name, email, role, state, organization, message, updates_opt_in, ip, ua)
-      values
-        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
-      returning id;
-    `;
-    const params = [
-      first_name, last_name, email, role, state, organization, message, updates_opt_in, ip, ua,
-    ];
-
+    const client = await pool.connect();
     try {
-      const r = await pool.query(sql, params);
-      const id = r?.rows?.[0]?.id ?? null;
+      // 1) Try UPDATE first
+      const rUpdate = await client.query(
+        `
+          update public.${TABLE}
+          set first_name = $2,
+              last_name  = $3,
+              role       = $4,
+              state      = $5,
+              organization = $6,
+              message    = $7,
+              updates_opt_in = $8,
+              ip = $9,
+              ua = $10
+          where email = $1
+          returning id;
+        `,
+        [email, first_name, last_name, role, state, organization, message, updates_opt_in, ip, ua]
+      );
+
+      if (rUpdate?.rows?.length) {
+        const id = rUpdate.rows[0].id;
+        log("SQL update ok, id:", id);
+        return {
+          statusCode: 200,
+          headers: { ...cors, "Content-Type": "application/json", "Cache-Control": "no-store" },
+          body: JSON.stringify({ ok: true, id, via: "sql_update" }),
+        };
+      }
+
+      // 2) If no row updated, INSERT
+      const rInsert = await client.query(
+        `
+          insert into public.${TABLE}
+            (first_name, last_name, email, role, state, organization, message, updates_opt_in, ip, ua)
+          values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+          returning id;
+        `,
+        [first_name, last_name, email, role, state, organization, message, updates_opt_in, ip, ua]
+      );
+
+      const id = rInsert?.rows?.[0]?.id ?? null;
       log("SQL insert ok, id:", id);
       return {
         statusCode: 200,
         headers: { ...cors, "Content-Type": "application/json", "Cache-Control": "no-store" },
-        body: JSON.stringify({ ok: true, id, via: "sql" }),
+        body: JSON.stringify({ ok: true, id, via: "sql_insert" }),
       };
     } catch (e) {
-      log("SQL insert error:", e?.message || e);
-      return { statusCode: 500, headers: cors, body: "Database insert failed" };
+      log("SQL upsert error:", e?.message || e);
+      return { statusCode: 500, headers: cors, body: "Database upsert failed" };
+    } finally {
+      client.release();
     }
   } catch (err) {
     log("Unhandled error:", err?.message || err);
