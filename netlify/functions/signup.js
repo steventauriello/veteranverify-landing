@@ -32,7 +32,10 @@ const supabase = (SUPABASE_URL && SERVICE_KEY)
   : null;
 
 const pool = DB_URL
-  ? new Pool({ connectionString: DB_URL, ssl: { rejectUnauthorized: false } })
+  ? new Pool({
+      connectionString: DB_URL,
+      ssl: { require: true, rejectUnauthorized: false },
+    })
   : null;
 
 // -------- Helpers ----------
