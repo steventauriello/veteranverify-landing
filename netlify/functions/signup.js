@@ -2,11 +2,7 @@
 // ESM ("type":"module" in package.json)
 
 import { createClient } from "@supabase/supabase-js";
-import { Pool } from "pg";
 import * as dns from "node:dns";
-
-// Force SSL for Supabase pooler in serverless
-process.env.PGSSLMODE = "require";
 
 try { dns.setDefaultResultOrder?.("ipv4first"); } catch {}
 
@@ -23,18 +19,10 @@ const DEBUG = true;
 // -------- ENVs ----------
 const SUPABASE_URL  = (process.env.SUPABASE_URL || "").trim().replace(/\/+$/, "");
 const SERVICE_KEY   = (process.env.SUPABASE_SERVICE_KEY || "").trim();
-const DB_URL        = (process.env.SUPABASE_DB_URL || process.env.DATABASE_URL || "").trim();
 const WEBHOOK_TOKEN = (process.env.FORM_WEBHOOK_SECRET || process.env.WEBHOOK_TOKEN || "").trim();
 
 const supabase = (SUPABASE_URL && SERVICE_KEY)
   ? createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } })
-  : null;
-
-const pool = DB_URL
-  ? new Pool({
-      connectionString: DB_URL,
-      ssl: { require: true, rejectUnauthorized: false },
-    })
   : null;
 
 // -------- Helpers ----------
@@ -86,9 +74,10 @@ export async function handler(event) {
     return { statusCode: 403, headers: cors, body: "Forbidden" };
   }
 
-  if (!DB_URL) log("Note: SQL pool not configured");
-  if (!SUPABASE_URL || !SERVICE_KEY) log("Note: REST client not fully configured");
-  try { if (DB_URL) { const u = new URL(DB_URL); log("DB URL user:", u.username, "| host:", u.hostname, "| ssl:", u.search || "(none)"); } } catch {}
+  if (!SUPABASE_URL || !SERVICE_KEY) {
+    log("REST client not fully configured");
+    return { statusCode: 500, headers: cors, body: "Server config error" };
+  }
 
   try {
     // ---- Parse body
@@ -154,76 +143,30 @@ export async function handler(event) {
     const ua = String(hdrs["user-agent"] || "");
 
     const row = { first_name, last_name, email, role, state, organization, message, updates_opt_in, ip, ua };
-    log("row about to write:", JSON.stringify(row)); // <-- you’ll see every value here
+    log("row about to write:", JSON.stringify(row));
 
-    // ---- Try REST upsert (best effort) ----
-    if (supabase) {
-      try {
-        const { data, error } = await supabase
-          .from(TABLE)
-          .upsert(row, { onConflict: "email" })
-          .select("id, email, first_name, last_name, role, state, organization, message, updates_opt_in, created_at")
-          .single();
-        if (error) throw error;
-        log("REST upsert ok, id:", data?.id);
-        return {
-          statusCode: 200,
-          headers: { ...cors, "Content-Type": "application/json", "Cache-Control": "no-store" },
-          body: JSON.stringify({ ok: true, via: "rest_upsert", ...data }),
-        };
-      } catch (e) {
-        log("REST upsert failed:", e?.message || e);
-        // fall through to SQL
-      }
-    } else {
-      log("REST client not available; skipping");
-    }
-
-    // ---- SQL upsert (Transaction Pooler) ----
-    if (!pool) {
-      log("No SQL pool configured");
-      return { statusCode: 502, headers: cors, body: "Supabase REST unreachable" };
-    }
-
-    // Ensure unique on email (create this once manually if you haven’t)
-    // create unique index if not exists signups_email_uidx on public.signups (email);
-
-    const sql = `
-      insert into public.${TABLE}
-        (first_name, last_name, email, role, state, organization, message, updates_opt_in, ip, ua)
-      values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
-      on conflict (email) do update set
-        first_name = excluded.first_name,
-        last_name  = excluded.last_name,
-        role       = excluded.role,
-        state      = excluded.state,
-        organization = excluded.organization,
-        message    = excluded.message,
-        updates_opt_in = excluded.updates_opt_in,
-        ip         = excluded.ip,
-        ua         = excluded.ua
-      returning id, email, first_name, last_name, role, state, organization, message, updates_opt_in, created_at;
-    `;
-    const params = [first_name, last_name, email, role, state, organization, message, updates_opt_in, ip, ua];
-
+    // ---- REST upsert (authoritative path) ----
     try {
-      const r = await pool.query(sql, params);
-      const saved = r?.rows?.[0] || null;
-      log(saved?.id ? "SQL upsert ok, id:" : "SQL upsert returned:", saved?.id || saved);
+      const { data, error } = await supabase
+        .from(TABLE)
+        .upsert(row, { onConflict: "email" })
+        .select("id, email, first_name, last_name, role, state, organization, message, updates_opt_in, created_at")
+        .single();
+      if (error) throw error;
+      log("REST upsert ok, id:", data?.id);
       return {
         statusCode: 200,
         headers: { ...cors, "Content-Type": "application/json", "Cache-Control": "no-store" },
-        body: JSON.stringify({ ok: true, via: "sql_upsert", ...(saved || {}) }),
+        body: JSON.stringify({ ok: true, via: "rest_upsert", ...data }),
       };
     } catch (e) {
-  const msg = e?.message || String(e);
-  log("SQL upsert error:", msg);
-  return {
-    statusCode: 500,
-    headers: { ...cors, "Content-Type": "application/json" },
-    body: JSON.stringify({ ok: false, via: "sql_error", error: msg })
-  };
-}
+      log("REST upsert failed:", e?.message || e);
+      return {
+        statusCode: 502,
+        headers: { ...cors, "Content-Type": "application/json" },
+        body: JSON.stringify({ ok: false, via: "rest_error", error: e?.message || String(e) }),
+      };
+    }
 
   } catch (err) {
     log("Unhandled error:", err?.message || err);
