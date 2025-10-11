@@ -53,47 +53,5 @@
     <p>We'll reach out soon with updates and pilot opportunities.</p>
     <a href="/">Return Home</a>
   </div>
-
-  <!-- ✅ The script goes *after* your HTML content, not inside <style> -->
-  <script>
-    (function () {
-      const form = document.getElementById('signup');
-      if (!form) return;
-
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const fd = new FormData(form);
-        const payload = Object.fromEntries(fd.entries());
-        payload["role[]"] = fd.getAll("role[]");
-
-        const btn = form.querySelector('button[type="submit"]');
-        const prev = btn ? btn.textContent : null;
-        if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
-
-        try {
-          const res = await fetch('/.netlify/functions/signup', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-
-          if (res.ok) {
-            window.location.href = '/thank-you/';
-            return;
-          }
-
-          const err = await res.text().catch(() => '');
-          console.error('Signup function error:', res.status, err);
-          alert('Sorry, something went wrong submitting your request.');
-        } catch (err) {
-          console.error('Network error:', err);
-          alert('Network error — please try again.');
-        } finally {
-          if (btn) { btn.disabled = false; btn.textContent = prev; }
-        }
-      });
-    })();
-  </script>
 </body>
 </html>
