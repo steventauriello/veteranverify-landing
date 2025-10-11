@@ -1,6 +1,13 @@
 // netlify/functions/signup.js
 // ESM ("type":"module" in package.json)
 
+// --- TEMP DEBUG ENV CHECK ---
+console.log("[signup] ENV CHECK:", {
+  url_ok: !!process.env.SUPABASE_URL,
+  key_len: process.env.SUPABASE_SERVICE_KEY?.length || 0,
+  db_ok: !!process.env.SUPABASE_DB_URL
+});
+
 import { createClient } from "@supabase/supabase-js";
 import * as dns from "node:dns";
 
