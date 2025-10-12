@@ -13,156 +13,25 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://veteranverify.net/" />
   <meta property="og:image" content="assets/images/logo.jpg" />
-  <meta name="twitter:card" content="summary_large_image" />
 
-  <!-- Favicon -->
+  <!-- Favicons -->
   <link rel="icon" href="assets/images/veteran-verify-logo.png" />
 
-  <style>
-    :root{
-      --navy:#0d3d8c;
-      --navy-900:#082a60;
-      --blue:#2162ff;
-      --gold:#ffcc33;
-      --ink:#0c1424;
-      --muted:#6b778c;
-      --bg:#f7f9fc;
-      --card:#ffffff;
-      --radius:14px;
-      --shadow:0 10px 30px rgba(12,20,36,.12);
-      --shadow-soft:0 6px 18px rgba(12,20,36,.08);
-      --focus: 0 0 0 3px rgba(33,98,255,.35);
-    }
-
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      font-family: system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;
-      color:var(--ink);
-      background:var(--bg);
-      line-height:1.45;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-    }
-
-    /* =========================
-       Header (brand + nav)
-       ========================= */
-    .nav-header{
-      position: sticky; top:0; z-index:50;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,0)) padding-box,
-        linear-gradient(180deg, #0d3d8c 0%, #082a60 100%) border-box;
-      box-shadow: 0 6px 18px rgba(12,20,36,.08);
-    }
-    .nav-container{
-      max-width:1200px; margin:0 auto;
-      padding:12px clamp(16px,5vw,40px);
-      display:flex; align-items:center; justify-content:space-between;
-      color:#fff;
-    }
-    .brand{display:flex; align-items:center; gap:12px; color:inherit; text-decoration:none}
-    .brand img{height:44px; width:auto; object-fit:contain}
-    .brand-text{display:flex; flex-direction:column; line-height:1}
-    .brand-name{
-      font-weight:800; letter-spacing:.4px;
-      font-size:clamp(1.1rem,1.6vw,1.4rem);
-      position:relative; display:inline-block;
-    }
-    .brand-name::after{
-      content:""; position:absolute; left:0; bottom:-3px;
-      width:100%; height:2px; background:#e63434; border-radius:2px; opacity:.85;
-    }
-    .brand-tagline{font-size:.72rem; color:#cfd8ff; letter-spacing:.5px; text-transform:uppercase}
-
-    .site-nav{display:flex; align-items:center; gap:22px}
-    .site-nav a{color:#fff; text-decoration:none; font-weight:600; padding:6px 4px; border-radius:6px}
-    .site-nav a:hover{text-decoration:underline}
-    .btn-small{background:var(--blue); border-radius:10px; padding:10px 12px; border:none; display:inline-block}
-
-    .menu-toggle{display:none; background:transparent; color:#fff; border:0; font-size:1.35rem; line-height:1; cursor:pointer}
-    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-
-    @media (max-width:860px){
-      .menu-toggle{display:inline-block}
-      .site-nav{
-        position:absolute; right:16px; top:64px;
-        background:#0b2f83; border:1px solid rgba(255,255,255,.15);
-        box-shadow:var(--shadow); border-radius:12px; padding:10px;
-        display:none; flex-direction:column; gap:6px; min-width:200px;
-      }
-      .site-nav a{padding:10px 12px; border-radius:8px}
-      .site-nav.show{display:flex}
-    }
-
-    /* =========================
-       Hero & layout
-       ========================= */
-    .hero{
-      background:linear-gradient(180deg, var(--navy) 0%, var(--navy-900) 100%);
-      color:white; padding:64px 20px;
-    }
-    .container{max-width:980px; margin:0 auto}
-    .hero-inner{display:grid; gap:28px; align-items:center; grid-template-columns:1fr}
-    .kicker{
-      display:inline-block; font-size:.82rem; letter-spacing:.8px; text-transform:uppercase;
-      background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.25);
-      padding:6px 10px; border-radius:999px;
-    }
-    h1{margin:0; font-size:clamp(2rem, 4vw, 3rem); line-height:1.1; font-weight:900}
-    .hero p{margin:0; color:#e6edff; font-size:1.06rem}
-
-    /* Card form */
-    .cta-card{margin-top:18px; background:var(--card); color:var(--ink); border-radius:var(--radius); box-shadow:var(--shadow); padding:22px}
-    form{display:grid; gap:14px}
-    label{font-weight:600; font-size:.92rem}
-    .row{display:grid; gap:12px; grid-template-columns:1fr}
-    input[type="text"], input[type="email"], select, textarea{
-      width:100%; padding:12px 12px; border:1px solid #d7dfec; border-radius:10px; background:#fff; font-size:1rem; outline:none; box-shadow:none;
-    }
-    textarea{min-height:96px; resize:vertical}
-    input:focus, select:focus, textarea:focus{box-shadow:var(--focus); border-color:var(--blue)}
-    .roles{display:flex; gap:10px; flex-wrap:wrap}
-    .pill{display:inline-flex; align-items:center; gap:8px; border:1px solid #d7dfec; padding:8px 12px; border-radius:999px; background:#fff; cursor:pointer; font-size:.95rem; box-shadow:var(--shadow-soft)}
-    .pill input{accent-color:var(--blue)}
-    .fineprint{color:var(--muted); font-size:.85rem}
-    .btn{display:inline-block; text-align:center; background:var(--blue); color:#fff; padding:12px 16px; border-radius:10px; border:none; font-weight:700; cursor:pointer; transition:.15s transform ease}
-    .btn:hover{transform:translateY(-1px)}
-    .btn.secondary{background:#14213d}
-    .success{display:none; padding:14px; border-radius:10px; background:#e8f1ff; color:#0b2f83; border:1px solid #cfe0ff; font-weight:600}
-    .success.show{display:block; animation:fade-in .25s ease-out}
-    @keyframes fade-in{from{opacity:0; transform:translateY(-4px)} to{opacity:1; transform:none}}
-
-    /* Sections */
-    .section{padding:40px 20px}
-    .grid-3{display:grid; gap:18px; grid-template-columns:1fr; margin-top:16px}
-    .feature{background:var(--card); border:1px solid #e7ecf3; border-radius:14px; padding:18px}
-    .feature h3{margin:.2rem 0 .4rem 0}
-    .feature p{margin:0; color:#435068}
-
-    /* Footer */
-    footer{padding:30px 20px; color:#7a869a; text-align:center}
-
-    @media (min-width:760px){
-      .hero-inner{grid-template-columns:1.1fr .9fr}
-      .row{grid-template-columns:1fr 1fr}
-      .grid-3{grid-template-columns:repeat(3,1fr)}
-    }
-  </style>
+  <!-- Styles -->
+  <link rel="stylesheet" href="/styles.css" />
 </head>
 
 <body>
-  <!-- NEW HEADER -->
+  <!-- HEADER -->
   <header class="nav-header" role="banner">
     <div class="nav-container">
       <a class="brand" href="/">
-  <img src="/assets/images/vv-logo-halo-1.png" alt="Veteran Verify logo" />
-  <span class="brand-text">
-    <span class="brand-name">Veteran Verify</span>
-    <span class="brand-tagline">Trusted Veteran Verification</span>
-  </span>
-</a>
+        <img src="/assets/images/veteran-verify-logo-halo.jpg" alt="Veteran Verify logo" />
+        <span class="brand-text">
+          <span class="brand-name">Veteran Verify</span>
+          <span class="brand-tagline">Trusted Veteran Verification</span>
+        </span>
+      </a>
 
       <button class="menu-toggle" aria-controls="site-nav" aria-expanded="false">
         <span class="sr-only">Toggle menu</span>
@@ -178,7 +47,7 @@
     </div>
   </header>
 
-  <!-- MAIN + HERO (kept intact) -->
+  <!-- MAIN -->
   <main>
     <section class="hero">
       <div class="container hero-inner">
@@ -277,7 +146,7 @@
 
   <footer id="contact">© <span id="yr"></span> VeteranVerify.net — All rights reserved.</footer>
 
-  <!-- Mobile menu toggle -->
+  <!-- Scripts -->
   <script>
     (function(){
       const btn = document.querySelector('.menu-toggle');
@@ -287,7 +156,6 @@
         const open = nav.classList.toggle('show');
         btn.setAttribute('aria-expanded', open ? 'true' : 'false');
       });
-      // year in footer
       const y = document.getElementById('yr'); if(y) y.textContent = new Date().getFullYear();
     })();
   </script>
