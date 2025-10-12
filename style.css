@@ -223,3 +223,44 @@ footer{padding:30px 20px; color:#7a869a; text-align:center}
 @media (max-width: 860px){
   .menu-toggle{ margin-left: 8px }
 }
+/* ======= HEADER NUKE HOTFIX ======= */
+/* Make header a bit taller and center content */
+.nav-header .nav-container{ min-height:72px; align-items:center; }
+
+/* Bigger halo logo that always pops */
+.nav-header .brand img{
+  height:58px !important;        /* size */
+  width:auto;
+  border-radius:50%;
+  background:#fff;               /* halo */
+  padding:3px;
+  object-fit:contain;
+}
+
+/* Clean spacing between logo and text */
+.nav-header .brand{ gap:14px }
+
+/* Kill the red underline everywhere */
+.nav-header .brand-name{ padding-bottom:0 !important; line-height:1.05; }
+.nav-header .brand-name::after{ content:none !important; display:none !important; }
+
+/* Hide the tagline on small screens to avoid collisions */
+.nav-header .brand-tagline{ display:none !important; }
+@media (min-width:900px){
+  .nav-header .brand img{ height:64px !important; }
+  .nav-header .brand-tagline{
+    display:block !important;
+    margin-top:2px;
+    font-size:.72rem;
+    letter-spacing:.6px;
+    text-transform:uppercase;
+    color:#CFD8FF;
+  }
+}
+
+/* Ensure only the header nav is styled (no global bleed) */
+.nav-header .site-nav a{
+  color:#fff; text-decoration:none; font-weight:600;
+  padding:6px 4px; border-radius:6px;
+}
+.nav-header .site-nav a:hover{ text-decoration:underline }
