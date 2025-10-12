@@ -190,3 +190,45 @@ footer { padding: 30px 20px; color: #7a869a; text-align: center; }
   .row { grid-template-columns: 1fr 1fr; }
   .grid-3 { grid-template-columns: repeat(3, 1fr); }
 }
+.nav-header {
+  background: #0B2F83;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+}
+.brand img {
+  height: 40px;
+  margin-right: 10px;
+}
+.brand-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 0.5px;
+}
+.brand-tagline {
+  font-size: 0.7rem;
+  color: #cfd8ff;
+  display: block;
+}
+nav a {
+  margin-left: 20px;
+  text-decoration: none;
+  color: #fff;
+  font-weight: 500;
+}
+nav a:hover {
+  text-decoration: underline;
+}
