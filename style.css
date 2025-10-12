@@ -353,3 +353,28 @@ footer{
   color:#7a869a;
   text-align:center;
 }
+.nav-header {
+  background: transparent;
+  box-shadow: none;
+  position: relative;
+  text-align: center;
+  padding-top: 24px;
+}
+.nav-container {
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+}
+.brand {
+  flex-direction: column;
+  gap: 10px;
+}
+.brand img {
+  height: 130px;
+}
+.brand-text {
+  align-items: center;
+}
+.site-nav {
+  display: none; /* hides nav for now */
+}
