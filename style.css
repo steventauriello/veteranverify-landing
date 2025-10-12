@@ -2,11 +2,11 @@
    Tokens
    =========== */
 :root{
-  --navy:#0d3d8c;          /* hero background */
+  --navy:#0d3d8c;
   --navy-900:#082a60;
-  --blue:#2162ff;          /* accent / CTA */
-  --red:#e63434;           /* brand underline */
-  --ink:#0c1424;           /* body text */
+  --blue:#2162ff;
+  --red:#e63434;
+  --ink:#0c1424;
   --muted:#6b778c;
   --bg:#f7f9fc;
   --card:#ffffff;
@@ -35,13 +35,10 @@ img{max-width:100%; height:auto; display:block}
 h1{margin:0; font-size:clamp(2rem,4vw,3rem); line-height:1.1; font-weight:900}
 :focus-visible{outline:var(--focus)}
 
-/* Accessibility helpers */
+/* Accessibility helper */
 .sr-only{
   position:absolute; width:1px; height:1px; padding:0; margin:-1px;
   overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
-}
-@media (prefers-reduced-motion:reduce){
-  *{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; scroll-behavior:auto !important}
 }
 
 /* ===========
@@ -56,28 +53,33 @@ h1{margin:0; font-size:clamp(2rem,4vw,3rem); line-height:1.1; font-weight:900}
   max-width:1200px; margin:0 auto;
   padding:12px clamp(16px,5vw,40px);
   display:flex; align-items:center; justify-content:space-between;
-  min-height:60px;
+  min-height:68px;
 }
 
-/* Brand lockup */
-.brand{display:flex; align-items:center; gap:10px; color:inherit; text-decoration:none}
-.brand img{height:40px; width:auto; object-fit:contain}
+/* Brand */
+.brand{display:flex; align-items:center; gap:14px; color:inherit; text-decoration:none}
+.brand img{
+  height:58px; width:auto;
+  border-radius:50%;
+  background:#fff;           /* ensures visibility on navy */
+  padding:3px;
+  object-fit:contain;
+}
 .brand-text{display:flex; flex-direction:column; justify-content:center; line-height:1.15}
 .brand-name{
   font-weight:800; letter-spacing:.4px;
   font-size:clamp(1.05rem,1.6vw,1.35rem);
-  position:relative; display:inline-block; padding-bottom:4px;
+  line-height:1.1;
 }
-.brand-name::after{
-  content:""; position:absolute; left:0; right:0; bottom:0;
-  height:2px; background:var(--red); border-radius:2px; opacity:.9;
-}
+/* remove underline completely */
+.brand-name::after{ content:none; display:none; }
+
 .brand-tagline{
   margin-top:2px; font-size:.72rem; letter-spacing:.6px;
   text-transform:uppercase; color:#CFD8FF;
 }
 
-/* Primary nav (scoped to header only) */
+/* Nav (scoped) */
 .site-nav{display:flex; align-items:center; gap:22px}
 .site-nav a{
   color:#fff; text-decoration:none; font-weight:600;
@@ -86,21 +88,24 @@ h1{margin:0; font-size:clamp(2rem,4vw,3rem); line-height:1.1; font-weight:900}
 .site-nav a:hover{text-decoration:underline}
 .btn-small{background:var(--blue); border-radius:10px; padding:10px 12px; border:none; display:inline-block}
 
-/* Mobile menu */
+/* Mobile */
 .menu-toggle{display:none; background:transparent; color:#fff; border:0; font-size:1.35rem; line-height:1; cursor:pointer}
 @media (max-width:860px){
-  .brand img{height:36px}
-  .brand-name{font-size:1.05rem}
-  .brand-tagline{display:none}        /* prevent overlap under underline */
-  .menu-toggle{display:inline-block; margin-left:6px}
+  .brand img{height:54px}
+  .brand-tagline{display:none}
+  .menu-toggle{display:inline-block; margin-left:8px}
   .site-nav{
-    position:absolute; right:16px; top:64px;
+    position:absolute; right:16px; top:72px;
     background:#0b2f83; border:1px solid rgba(255,255,255,.15);
     box-shadow:var(--shadow); border-radius:12px; padding:10px;
     display:none; flex-direction:column; gap:6px; min-width:200px;
   }
   .site-nav a{padding:10px 12px}
   .site-nav.show{display:flex}
+}
+@media (min-width:900px){
+  .brand img{height:64px}
+  .brand-tagline{display:block}
 }
 
 /* ===========
@@ -143,7 +148,7 @@ input:focus,select:focus,textarea:focus{box-shadow:var(--focus); border-color:va
 .pill{
   display:inline-flex; align-items:center; gap:8px;
   border:1px solid #d7dfec; padding:8px 12px; border-radius:999px;
-  background:#fff; cursor:pointer; font-size:.95rem; box-shadow:var(--shadow-soft)
+  background:#fff; cursor:pointer; font-size:.95rem; box-shadow:var(--shadow-soft);
 }
 .pill input{accent-color:var(--blue)}
 
@@ -181,86 +186,3 @@ input:focus,select:focus,textarea:focus{box-shadow:var(--focus); border-color:va
    Footer
    =========== */
 footer{padding:30px 20px; color:#7a869a; text-align:center}
-/* === Header hotfix: bigger halo logo + no underline + tidy mobile === */
-
-/* Make header a touch taller to fit the bigger logo cleanly */
-.nav-container{
-  min-height: 68px;
-  align-items: center;
-}
-
-/* Bigger logo (halo version) */
-.brand img{
-  height: 54px;           /* was ~40–42px */
-  width: auto;
-  border-radius: 50%;     /* keeps the circle perfect */
-  background: #fff;       /* extra pop on navy */
-  padding: 3px;           /* subtle breathing room inside circle */
-  object-fit: contain;
-}
-
-/* Give the wordmark a hair more space from the logo */
-.brand{ gap: 14px }
-
-/* Kill the red underline (cleaner, no overlap) */
-.brand-name::after{ display: none; }
-
-/* Keep tagline only on wider screens */
-.brand-tagline{ display: none; }
-@media (min-width: 900px){
-  .brand img{ height: 60px }        /* larger on desktop */
-  .brand-tagline{
-    display: block;
-    margin-top: 2px;
-    font-size: .72rem;
-    letter-spacing: .6px;
-    text-transform: uppercase;
-    color: #CFD8FF;
-  }
-}
-
-/* Make sure the burger doesn’t crowd things on mobile */
-@media (max-width: 860px){
-  .menu-toggle{ margin-left: 8px }
-}
-/* ======= HEADER NUKE HOTFIX ======= */
-/* Make header a bit taller and center content */
-.nav-header .nav-container{ min-height:72px; align-items:center; }
-
-/* Bigger halo logo that always pops */
-.nav-header .brand img{
-  height:58px !important;        /* size */
-  width:auto;
-  border-radius:50%;
-  background:#fff;               /* halo */
-  padding:3px;
-  object-fit:contain;
-}
-
-/* Clean spacing between logo and text */
-.nav-header .brand{ gap:14px }
-
-/* Kill the red underline everywhere */
-.nav-header .brand-name{ padding-bottom:0 !important; line-height:1.05; }
-.nav-header .brand-name::after{ content:none !important; display:none !important; }
-
-/* Hide the tagline on small screens to avoid collisions */
-.nav-header .brand-tagline{ display:none !important; }
-@media (min-width:900px){
-  .nav-header .brand img{ height:64px !important; }
-  .nav-header .brand-tagline{
-    display:block !important;
-    margin-top:2px;
-    font-size:.72rem;
-    letter-spacing:.6px;
-    text-transform:uppercase;
-    color:#CFD8FF;
-  }
-}
-
-/* Ensure only the header nav is styled (no global bleed) */
-.nav-header .site-nav a{
-  color:#fff; text-decoration:none; font-weight:600;
-  padding:6px 4px; border-radius:6px;
-}
-.nav-header .site-nav a:hover{ text-decoration:underline }
