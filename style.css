@@ -66,13 +66,18 @@ h1{margin:0; font-size:clamp(2rem,4vw,3rem); line-height:1.1; font-weight:900}
 }
 
 .brand img {
-  height: 92px;          /* larger SVG for visibility */
+  height: 110px;
   width: auto;
   object-fit: contain;
   display: block;
   border-radius: 0;
   background: none;
   padding: 0;
+}
+
+@media (min-width:900px){
+  .brand img { height: 130px; }
+  .brand-tagline { display:block; }
 }
 
 .brand-text {
