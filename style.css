@@ -181,3 +181,45 @@ input:focus,select:focus,textarea:focus{box-shadow:var(--focus); border-color:va
    Footer
    =========== */
 footer{padding:30px 20px; color:#7a869a; text-align:center}
+/* === Header hotfix: bigger halo logo + no underline + tidy mobile === */
+
+/* Make header a touch taller to fit the bigger logo cleanly */
+.nav-container{
+  min-height: 68px;
+  align-items: center;
+}
+
+/* Bigger logo (halo version) */
+.brand img{
+  height: 54px;           /* was ~40–42px */
+  width: auto;
+  border-radius: 50%;     /* keeps the circle perfect */
+  background: #fff;       /* extra pop on navy */
+  padding: 3px;           /* subtle breathing room inside circle */
+  object-fit: contain;
+}
+
+/* Give the wordmark a hair more space from the logo */
+.brand{ gap: 14px }
+
+/* Kill the red underline (cleaner, no overlap) */
+.brand-name::after{ display: none; }
+
+/* Keep tagline only on wider screens */
+.brand-tagline{ display: none; }
+@media (min-width: 900px){
+  .brand img{ height: 60px }        /* larger on desktop */
+  .brand-tagline{
+    display: block;
+    margin-top: 2px;
+    font-size: .72rem;
+    letter-spacing: .6px;
+    text-transform: uppercase;
+    color: #CFD8FF;
+  }
+}
+
+/* Make sure the burger doesn’t crowd things on mobile */
+@media (max-width: 860px){
+  .menu-toggle{ margin-left: 8px }
+}
