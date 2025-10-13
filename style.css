@@ -356,7 +356,7 @@ footer{
 
 /* 2) Lower the logo into the blue a bit (overlap amount) */
 .brand{
-  bottom: calc(var(--logo-size) * -0.58) !important;  /* was around -0.70 */
+  bottom: calc(var(--logo-size) * -0.62) !important;  /* was around -0.70 */
 }
 
 /* 3) Reduce space above the headline */
