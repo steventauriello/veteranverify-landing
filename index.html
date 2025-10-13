@@ -45,25 +45,25 @@
           <span class="kicker">Coming soon</span>
           <h1>Trusted veteran verification — built simple, private, and fair.</h1>
           <p class="mission-text">
-  We’re building a veteran-owned verification system designed to break the monopoly of bloated third-party corporations that have locked away government data for profit. These gatekeepers charge vendors whatever they want — and when vendors pay more, the costs get passed on to you, the consumer.  
-  <br><br>
-  Veteran Verify is here to change that. Our mission is to create a better, faster, more secure, and truly private verification platform — one that restores access, fairness, and trust to both veterans and vendors.  
-  <br><br>
-  <span class="fade-highlight">No corporate control.</span> 
-  <span class="fade-highlight">No gatekeeping.</span> 
-  <span class="fade-highlight">No inflated prices.</span>  
-  Just a <span class="fade-highlight">free</span>, <span class="fade-highlight">American-made system</span> that works for the people it was meant to serve.  
-  <br><br>
-  Join us on this mission — because we can do this together.
-</p>
+            We’re building a veteran-owned verification system designed to break the monopoly of bloated third-party corporations that have locked away government data for profit. These gatekeepers charge vendors whatever they want — and when vendors pay more, the costs get passed on to you, the consumer.
+            <br><br>
+            Veteran Verify is here to change that. Our mission is to create a better, faster, more secure, and truly private verification platform — one that restores access, fairness, and trust to both veterans and vendors.
+            <br><br>
+            <span class="fade-highlight">No corporate control.</span>
+            <span class="fade-highlight">No gatekeeping.</span>
+            <span class="fade-highlight">No inflated prices.</span>
+            Just a <span class="fade-highlight">free</span>, <span class="fade-highlight">American-made system</span> that works for the people it was meant to serve.
+            <br><br>
+            Join us on this mission — because we can do this together.
+          </p>
         </div>
 
         <div class="cta-card" aria-labelledby="join">
           <h2 id="join" style="margin:0 0 8px 0; font-size:1.25rem;">Join the early access list</h2>
           <div id="form-success" class="success" role="status" aria-live="polite">Thanks—you're on the list! We’ll email you with next steps.</div>
 
-          <form id="signup" name="vv-waitlist" method="POST" netlify data-netlify="true" netlify-honeypot="bot-field" accept-charset="UTF-8">
-            <input type="hidden" name="form-name" value="vv-waitlist" />
+          <!-- IMPORTANT: no Netlify Forms attributes here -->
+          <form id="signup" name="vv-waitlist" method="POST" accept-charset="UTF-8">
             <p class="sr-only"><label>Don’t fill this out: <input name="bot-field" autocomplete="off" /></label></p>
 
             <div class="row">
@@ -133,10 +133,57 @@
 
   <footer id="contact">© <span id="yr"></span> VeteranVerify.net — All rights reserved.</footer>
 
+  <!-- Minimal inline JS to submit to Netlify Function -->
   <script>
-    (function(){
-      const y = document.getElementById('yr');
-      if (y) y.textContent = new Date().getFullYear();
+    (function () {
+      const yearEl = document.getElementById('yr');
+      if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+      const form = document.getElementById('signup');
+      const okBanner = document.getElementById('form-success');
+      if (!form) return;
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const fd = new FormData(form);
+        // collect role[] checkboxes (server also accepts single role)
+        const roles = fd.getAll('role[]');
+        const payload = {
+          // keep both 'name' and split fields in case your function maps either
+          name: (fd.get('name') || '').trim(),
+          first_name: (fd.get('first_name') || '').trim(),
+          last_name:  (fd.get('last_name')  || '').trim(),
+          email: (fd.get('email') || '').trim(),
+          role: roles.length ? roles.join(', ') : (fd.get('role') || null),
+          organization: fd.get('organization') || null,
+          state: fd.get('state') || null,
+          message: fd.get('message') || null,
+          updates: fd.get('updates') ? 'true' : 'false'
+        };
+
+        try {
+          const res = await fetch('/.netlify/functions/signup', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const json = await res.json().catch(() => ({}));
+
+          if (!res.ok || json.ok === false) {
+            throw new Error(json.error || ('HTTP ' + res.status));
+          }
+
+          if (okBanner) {
+            okBanner.textContent = "Thanks—you're on the list! We’ll email you with next steps.";
+            okBanner.classList.add('show');
+          }
+          form.reset();
+        } catch (err) {
+          console.error('signup submit failed:', err);
+          alert('Sorry, something went wrong. Please try again.');
+        }
+      });
     })();
   </script>
 </body>
