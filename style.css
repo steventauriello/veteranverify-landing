@@ -47,8 +47,8 @@ h1{margin:0; font-size:clamp(2rem,4vw,3rem); line-height:1.1; font-weight:900}
 
 /* knobs */
 :root{
-  --badge-size: clamp(110px, 18vw, 180px); /* overall circle size */
-  --logo-pct: 74%;                         /* SVG size inside circle */
+  --badge-size: clamp(180px, 22vw, 260px);
+--logo-pct: 85%;                         /* SVG size inside circle */
   --nav-navy: #0b2f83;
   --nav-grad: linear-gradient(180deg, #0e3f8f 0%, #0a2f71 100%);
 }
