@@ -42,13 +42,12 @@ h1{margin:0; font-size:clamp(2rem,4vw,3rem); line-height:1.1; font-weight:900}
 }
 
 /* ===========
-   Header (brand + nav) — SVG floats on a CSS-made circle
+   Header (brand + nav) — centered SVG, no circle
    =========== */
 
 /* knobs */
 :root{
-  --badge-size: clamp(200px, 24vw, 320px);  /* size of the round badge */
-  --logo-pct:  86%;                         /* SVG size inside badge   */
+  --logo-size: clamp(180px, 26vw, 380px);   /* overall SVG size */
   --nav-navy:  #0b2f83;
   --nav-grad:  linear-gradient(180deg, #0e3f8f 0%, #0a2f71 100%);
 }
@@ -75,42 +74,32 @@ h1{margin:0; font-size:clamp(2rem,4vw,3rem); line-height:1.1; font-weight:900}
   position: relative;
 }
 
-/* center the badge and hang it into the hero */
+/* center the SVG and hang it into the hero */
 .brand{
   position: absolute;
   left: 50%;
-  bottom: calc(var(--badge-size) * -0.50);  /* half in hero, half in header */
+  bottom: calc(var(--logo-size) * -0.50);   /* half in hero, half in header */
   transform: translateX(-50%);
   text-decoration: none;
   color: inherit;
   display: grid;
   place-items: center;
+  z-index: 5;
 }
 
-/* build the circle in CSS; the SVG sits above it */
-.brand::before{
-  content:"";
-  width: var(--badge-size);
-  height: var(--badge-size);
-  border-radius: 50%;
-  background: #fff;
-  box-shadow:
-    0 0 0 3px rgba(255,255,255,.98),
-    0 8px 24px rgba(12,20,36,.28);
-  z-index: 1;
-}
+/* kill any old circle layer if present */
+.brand::before{ content: none !important; }
 
-/* your transparent SVG (vv-eagle-logo.svg) */
+/* transparent SVG (e.g. /assets/images/vv-eagle-logo.svg) */
 .brand img{
-  position: absolute;
-  z-index: 2;
-  width: var(--logo-pct);                   /* scale SVG inside the circle */
-  height: auto;
+  width: var(--logo-size) !important;       /* override any legacy height rules */
+  height: auto !important;
   display: block;
   object-fit: contain;
+  filter: drop-shadow(0 8px 24px rgba(12,20,36,.24)); /* subtle lift */
 }
 
-/* hide the text block in the header (we’re using the badge only) */
+/* hide the text block in the header (using the mark only) */
 .brand-text,
 .brand-name,
 .brand-tagline{ display:none !important; }
@@ -154,12 +143,9 @@ h1{margin:0; font-size:clamp(2rem,4vw,3rem); line-height:1.1; font-weight:900}
   .site-nav.show{ display:flex; }
 }
 
-/* scale the badge up a bit more on desktop */
+/* scale up a touch more on wide screens (optional) */
 @media (min-width:900px){
-  :root{
-    --badge-size: clamp(240px, 26vw, 360px);
-    --logo-pct:  88%;
-  }
+  :root{ --logo-size: clamp(220px, 28vw, 440px); }
 }
 
 /* ===========
