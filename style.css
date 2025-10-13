@@ -253,7 +253,7 @@ footer{
   :root{
   --logo-size: clamp(220px, 32vw, 420px);
 }
-  .brand{ bottom: calc(var(--logo-size) * -0.46); }
+  .brand{ bottom: calc(var(--logo-size) * -0.55); }
 }
 /* === Make logo scroll with the page (not sticky) === */
 .nav-header{
