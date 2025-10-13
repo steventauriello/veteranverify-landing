@@ -317,3 +317,46 @@ footer{
 .site-nav {
   display: none; /* hides nav for now */
 }
+/* ===============================
+   Header/Logo & Hero final polish
+   (paste this at the very end of style.css)
+   =============================== */
+
+/* 1) Lift the logo slightly (so it doesn't sit on the headline) */
+.brand{
+  bottom: calc(var(--badge-size) * -0.38);  /* was -0.50 */
+}
+
+/* 2) Give the eagle subtle depth so it pops on blue/white */
+.brand img{
+  /* soft shadow + gentle white glow */
+  filter:
+    drop-shadow(0 10px 24px rgba(0,0,0,.25))
+    drop-shadow(0 0 18px rgba(255,255,255,.45));
+}
+
+/* 3) Smooth fade where the white header meets the blue hero */
+.hero{ position: relative; z-index: 0; }
+.hero-inner{ position: relative; z-index: 1; }  /* keep content above the fade */
+.hero::before{
+  content:"";
+  position:absolute;
+  top:0; left:0; right:0;
+  height:160px;                     /* length of the fade */
+  pointer-events:none;
+  z-index:0;                        /* under the text, over the background */
+  background: linear-gradient(to bottom, #ffffff 0%, rgba(255,255,255,0) 90%);
+}
+
+/* 4) (Optional) Subtle “flag shimmer” animation
+   To enable, add `animation: flagShimmer 5s ease-in-out infinite;`
+   to `.brand img` above.
+*/
+@keyframes flagShimmer{
+  0%, 100% { filter:
+    drop-shadow(0 10px 24px rgba(0,0,0,.25))
+    drop-shadow(0 0 16px rgba(255,255,255,.35)); }
+  50% { filter:
+    drop-shadow(0 12px 28px rgba(0,0,0,.28))
+    drop-shadow(0 0 22px rgba(255,255,255,.55)); }
+}
