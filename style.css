@@ -360,3 +360,32 @@ footer{
     drop-shadow(0 12px 28px rgba(0,0,0,.28))
     drop-shadow(0 0 22px rgba(255,255,255,.55)); }
 }
+/* === final nudge: logo position + softer fade (drop in at end) === */
+
+/* make the badge a touch larger & scale the SVG a bit more */
+:root{
+  --badge-size: clamp(220px, 28vw, 360px);  /* was 200/24/320 */
+  --logo-pct:  92%;                         /* was 86% */
+}
+
+/* sink the badge a little more into the hero so it clears the H1 */
+.brand{
+  bottom: calc(var(--badge-size) * -0.44);  /* was -0.38 */
+}
+
+/* soften/shorten the header fade so it doesn't wash the top of the H1 */
+.hero::before{
+  height: 120px;                             /* was 160px */
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,.90) 0%,
+    rgba(255,255,255,.60) 25%,
+    rgba(255,255,255,.00) 85%
+  );
+}
+
+/* mobile tune: keep things from crowding on narrow screens */
+@media (max-width: 420px){
+  :root{ --badge-size: clamp(200px, 42vw, 300px); --logo-pct: 90%; }
+  .brand{ bottom: calc(var(--badge-size) * -0.42); }
+}
