@@ -250,6 +250,8 @@ footer{
    Mobile tweaks
    =========== */
 @media (max-width:420px){
-  :root{ --logo-size: clamp(160px, 44vw, 300px); }
+  :root{
+  --logo-size: clamp(200px, 32vw, 400px);
+}
   .brand{ bottom: calc(var(--logo-size) * -0.46); }
 }
