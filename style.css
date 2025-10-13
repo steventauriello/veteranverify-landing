@@ -112,7 +112,7 @@ h1{margin:0; font-size:clamp(2rem,4vw,3rem); line-height:1.1; font-weight:900}
 .hero{
   background:linear-gradient(180deg,var(--navy) 0%,var(--navy-900) 100%);
   color:#fff;
-  padding: calc(120px + var(--logo-size) * 0.55) 0 64px; /* space for overlapped logo */
+  padding: calc(80px + var(--logo-size) * 0.55) 0 64px; /* space for overlapped logo */
 }
 .hero-inner{
   display:grid;
