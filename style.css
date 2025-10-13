@@ -347,3 +347,26 @@ footer{
 /* Hide nav UI for now */
 .brand-text, .brand-name, .brand-tagline{ display:none !important; }
 .site-nav, .menu-toggle{ display:none !important; }
+/* === Thin white top + tighter gap to headline === */
+
+/* 1) Make the white header shorter */
+.nav-container{
+  height: 110px !important;   /* was ~180px */
+}
+
+/* 2) Lower the logo into the blue a bit (overlap amount) */
+.brand{
+  bottom: calc(var(--logo-size) * -0.58) !important;  /* was around -0.70 */
+}
+
+/* 3) Reduce space above the headline */
+.hero{
+  padding-top: calc(110px + var(--logo-size) * 0.62) !important; /* was ~0.82 */
+}
+
+/* Responsive tune so it still looks right on small screens */
+@media (max-width: 900px){
+  .nav-container{ height: 96px !important; }
+  .brand{ bottom: calc(var(--logo-size) * -0.54) !important; }
+  .hero{  padding-top: calc(96px + var(--logo-size) * 0.58) !important; }
+}
