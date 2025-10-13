@@ -462,3 +462,9 @@ footer{
 
 /* if a mobile menu still exists, hide it (we don't need it now) */
 .menu-toggle, .site-nav{ display:none !important; }
+/* Force logo visible and above everything */
+.nav-header   { overflow: visible; }
+.nav-container{ position: relative; }
+.brand        { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--logo-size)*-0.5); z-index: 10; }
+.brand::before{ content: none !important; }        /* nuke old circle if any */
+.brand img    { position: relative; z-index: 11; display: block !important; width: var(--logo-size) !important; height: auto !important; opacity: 1 !important; }
