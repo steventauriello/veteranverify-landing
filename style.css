@@ -404,3 +404,61 @@ footer{
 @media (prefers-reduced-motion: reduce){
   .brand, .brand::before, .brand::after { animation: none !important; }
 }
+/* ==== QUICK FIX: center brand logo, no circle, stable pulse ==== */
+:root{
+  --logo-size: clamp(180px, 26vw, 340px); /* adjust bigger/smaller here */
+}
+
+/* keep the header as an anchor, no extra backgrounds */
+.nav-header{ position:sticky; top:0; z-index:100; background:transparent; box-shadow:none; }
+
+/* center anchor for the brand */
+.nav-container{
+  position:relative;
+  height:120px;                 /* room for the overlap */
+  display:flex; align-items:center; justify-content:center;
+}
+
+/* center the brand and hang it into the hero */
+.brand{
+  position:absolute !important; /* override older rules */
+  left:50% !important;
+  bottom: calc(var(--logo-size) * -0.42) !important; /* how far it overlaps */
+  transform: translateX(-50%) !important;
+  display:block !important;
+  text-decoration:none;
+  z-index:5;
+}
+
+/* nuke any leftover circle or badge layers */
+.brand::before,
+.brand-badge,
+.brand-badge::before{ content:none !important; display:none !important; }
+
+/* show only the mark */
+.brand-text, .brand-name, .brand-tagline{ display:none !important; }
+
+/* the actual SVG */
+.brand img{
+  width: var(--logo-size) !important;
+  height: auto !important;
+  display:block !important;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 24px rgba(0,0,0,.25));
+  transform-origin: center center;
+  animation: vvLogoPulse 6s ease-in-out infinite; /* gentle pulse */
+}
+
+/* IMPORTANT: only scale here (do NOT change translate) */
+@keyframes vvLogoPulse{
+  0%,100%{ transform: scale(1); opacity: 1; }
+  50%    { transform: scale(1.04); opacity: .97; }
+}
+
+/* give the hero enough top space so the logo doesn't collide */
+.hero{
+  padding-top: calc(120px + var(--logo-size) * 0.55) !important;
+}
+
+/* if a mobile menu still exists, hide it (we don't need it now) */
+.menu-toggle, .site-nav{ display:none !important; }
