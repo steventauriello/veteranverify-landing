@@ -14,6 +14,9 @@
   --shadow:0 10px 30px rgba(12,20,36,.12);
   --shadow-soft:0 6px 18px rgba(12,20,36,.08);
   --focus:0 0 0 3px rgba(33,98,255,.35);
+
+  /* header/logo knobs */
+  --logo-size: clamp(180px, 26vw, 340px);
 }
 
 /* ===========
@@ -44,91 +47,72 @@ h1{margin:0; font-size:clamp(2rem,4vw,3rem); line-height:1.1; font-weight:900}
 /* ===========
    Header (brand only — no nav/menu)
    =========== */
-
-/* knobs */
-:root{
-  --badge-size: clamp(200px, 24vw, 320px);
-  --logo-pct: 86%;
-  --nav-navy: #0b2f83;
-}
-
 .nav-header{
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background:#fff;
-  color: var(--nav-navy);
-  box-shadow: 0 2px 10px rgba(12,20,36,.12);
-  overflow: visible;
+  position:sticky; top:0; z-index:100;
+  background:transparent;
+  box-shadow:none;
+  overflow:visible;
 }
-
-/* container now just centers the brand */
 .nav-container{
   max-width:1200px;
   margin:0 auto;
-  height:80px;
+  height:120px;                     /* space to anchor the logo overlap */
   padding:0 clamp(16px,5vw,40px);
-  display:flex;
-  align-items:center;
-  justify-content:center;     /* center since there’s no nav */
+  display:flex; align-items:center; justify-content:center;
   position:relative;
 }
 
-/* center badge and hang into hero */
+/* centered logo overlapping the hero */
 .brand{
   position:absolute;
   left:50%;
-  bottom: calc(var(--badge-size) * -0.50);
-  transform:translateX(-50%);
-  display:grid; place-items:center;
+  bottom: calc(var(--logo-size) * -0.50); /* how far it hangs into hero */
+  transform: translateX(-50%);
+  display:block;
   text-decoration:none; color:inherit;
   z-index:10;
 }
 
-/* circular badge behind the SVG */
-.brand::before{
-  content:"";
-  width:var(--badge-size);
-  height:var(--badge-size);
-  border-radius:50%;
-  background:#fff;
-  box-shadow:
-    0 0 0 3px rgba(255,255,255,.98),
-    0 8px 24px rgba(12,20,36,.28);
-}
+/* ensure no circle/badge remains */
+.brand::before{ content:none !important; }
 
 /* transparent SVG logo */
 .brand img{
-  position:absolute;
-  width:var(--logo-pct);
+  width:var(--logo-size);
   height:auto;
   display:block;
   object-fit:contain;
+  filter: drop-shadow(0 8px 24px rgba(12,20,36,.22));
+  transform-origin:center center;
+  animation: vvLogoPulse 6s ease-in-out infinite;
+}
+@keyframes vvLogoPulse{
+  0%,100%{ transform: scale(1); opacity:1; }
+  50%    { transform: scale(1.04); opacity:.97; }
 }
 
-/* hide any leftover brand text */
-.brand-text, .brand-name, .brand-tagline{ display:none !important; }
+/* optional hover glow (nice but subtle) */
+.brand img{
+  transition: filter .35s ease, transform .35s ease;
+}
+.brand:hover img{
+  filter:
+    drop-shadow(0 0 12px rgba(33,98,255,.45))
+    drop-shadow(0 0 24px rgba(33,98,255,.25));
+  transform: scale(1.05);
+}
 
-/* completely remove nav + hamburger if they exist */
+/* hide any leftover brand text + all nav/menu UI */
+.brand-text, .brand-name, .brand-tagline{ display:none !important; }
 .site-nav, .menu-toggle{ display:none !important; }
 
-/* desktop upscale (optional) */
-@media (min-width:900px){
-  :root{ --badge-size: clamp(240px, 26vw, 360px); --logo-pct: 88%; }
-}
-
 /* ===========
-   Hero — give space for the overlapping badge
+   Hero
    =========== */
-.hero{
-  padding-top: calc(var(--badge-size) * 0.55 + 48px);
-  background: var(--nav-grad);
-  color:#fff;
-}
 .hero{
   background:linear-gradient(180deg,var(--navy) 0%,var(--navy-900) 100%);
   color:#fff;
-  padding:64px 0;
+  padding: calc(120px + var(--logo-size) * 0.55) 0 64px; /* space for overlapped logo */
 }
 .hero-inner{
   display:grid;
@@ -261,210 +245,11 @@ footer{
   color:#7a869a;
   text-align:center;
 }
-.nav-header {
-  background: transparent;
-  box-shadow: none;
-  position: relative;
-  text-align: center;
-  padding-top: 24px;
-}
-.nav-container {
-  justify-content: center;
-  flex-direction: column;
-  gap: 8px;
-}
-.brand {
-  flex-direction: column;
-  gap: 10px;
-}
-.brand img {
-  height: 130px;
-}
-.brand-text {
-  align-items: center;
-}
-.site-nav {
-  display: none; /* hides nav for now */
-}
-/* ===============================
-   Header/Logo & Hero final polish
-   (paste this at the very end of style.css)
-   =============================== */
 
-/* 1) Lift the logo slightly (so it doesn't sit on the headline) */
-.brand{
-  bottom: calc(var(--badge-size) * -0.38);  /* was -0.50 */
+/* ===========
+   Mobile tweaks
+   =========== */
+@media (max-width:420px){
+  :root{ --logo-size: clamp(160px, 44vw, 300px); }
+  .brand{ bottom: calc(var(--logo-size) * -0.46); }
 }
-
-/* 2) Give the eagle subtle depth so it pops on blue/white */
-.brand img{
-  /* soft shadow + gentle white glow */
-  filter:
-    drop-shadow(0 10px 24px rgba(0,0,0,.25))
-    drop-shadow(0 0 18px rgba(255,255,255,.45));
-}
-
-/* 3) Smooth fade where the white header meets the blue hero */
-.hero{ position: relative; z-index: 0; }
-.hero-inner{ position: relative; z-index: 1; }  /* keep content above the fade */
-.hero::before{
-  content:"";
-  position:absolute;
-  top:0; left:0; right:0;
-  height:160px;                     /* length of the fade */
-  pointer-events:none;
-  z-index:0;                        /* under the text, over the background */
-  background: linear-gradient(to bottom, #ffffff 0%, rgba(255,255,255,0) 90%);
-}
-
-/* 4) (Optional) Subtle “flag shimmer” animation
-   To enable, add `animation: flagShimmer 5s ease-in-out infinite;`
-   to `.brand img` above.
-*/
-@keyframes flagShimmer{
-  0%, 100% { filter:
-    drop-shadow(0 10px 24px rgba(0,0,0,.25))
-    drop-shadow(0 0 16px rgba(255,255,255,.35)); }
-  50% { filter:
-    drop-shadow(0 12px 28px rgba(0,0,0,.28))
-    drop-shadow(0 0 22px rgba(255,255,255,.55)); }
-}
-/* === final nudge: logo position + softer fade (drop in at end) === */
-
-/* make the badge a touch larger & scale the SVG a bit more */
-:root{
-  --badge-size: clamp(220px, 28vw, 360px);  /* was 200/24/320 */
-  --logo-pct:  92%;                         /* was 86% */
-}
-
-/* sink the badge a little more into the hero so it clears the H1 */
-.brand{
-  bottom: calc(var(--badge-size) * -0.44);  /* was -0.38 */
-}
-
-/* soften/shorten the header fade so it doesn't wash the top of the H1 */
-.hero::before{
-  height: 120px;                             /* was 160px */
-  background: linear-gradient(
-    to bottom,
-    rgba(255,255,255,.90) 0%,
-    rgba(255,255,255,.60) 25%,
-    rgba(255,255,255,.00) 85%
-  );
-}
-
-/* mobile tune: keep things from crowding on narrow screens */
-@media (max-width: 420px){
-  :root{ --badge-size: clamp(200px, 42vw, 300px); --logo-pct: 90%; }
-  .brand{ bottom: calc(var(--badge-size) * -0.42); }
-}
-/* === LogoPulse: gentle entrance + glow ring ==================== */
-/* Plays once on load. No JS needed. */
-
-.brand{
-  /* entrance pop (keeps your translateX(-50%) baseline) */
-  animation: logo-pop 800ms cubic-bezier(.2,.7,.2,1) .15s both;
-}
-
-.brand::before{
-  /* soften the white disc then settle to your existing shadow */
-  animation: logo-glow 1200ms ease-out .25s both;
-}
-
-.brand::after{
-  /* expanding halo ring */
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius:50%;
-  z-index:0;
-  box-shadow: 0 0 0 0 rgba(255,255,255,.55);
-  animation: logo-ring 1200ms ease-out .25s both;
-}
-
-/* Keyframes */
-@keyframes logo-pop{
-  0%   { transform: translateX(-50%) translateY(12px) scale(.92); opacity:0; }
-  60%  { transform: translateX(-50%) translateY(0)    scale(1.03); opacity:1; }
-  100% { transform: translateX(-50%) translateY(0)    scale(1); }
-}
-
-@keyframes logo-glow{
-  0%   { box-shadow: 0 0 0 0 rgba(255,255,255,0), 0 8px 24px rgba(12,20,36,0); }
-  60%  { box-shadow: 0 0 0 3px rgba(255,255,255,.98), 0 12px 32px rgba(12,20,36,.30); }
-  100% { box-shadow: 0 0 0 3px rgba(255,255,255,.98), 0 8px 24px rgba(12,20,36,.28); }
-}
-
-@keyframes logo-ring{
-  0%   { box-shadow: 0 0 0 0   rgba(255,255,255,.55); opacity:.9; }
-  100% { box-shadow: 0 0 0 26px rgba(255,255,255,0);  opacity:0; }
-}
-
-/* Respect users who prefer less motion */
-@media (prefers-reduced-motion: reduce){
-  .brand, .brand::before, .brand::after { animation: none !important; }
-}
-/* ==== QUICK FIX: center brand logo, no circle, stable pulse ==== */
-:root{
-  --logo-size: clamp(180px, 26vw, 340px); /* adjust bigger/smaller here */
-}
-
-/* keep the header as an anchor, no extra backgrounds */
-.nav-header{ position:sticky; top:0; z-index:100; background:transparent; box-shadow:none; }
-
-/* center anchor for the brand */
-.nav-container{
-  position:relative;
-  height:120px;                 /* room for the overlap */
-  display:flex; align-items:center; justify-content:center;
-}
-
-/* center the brand and hang it into the hero */
-.brand{
-  position:absolute !important; /* override older rules */
-  left:50% !important;
-  bottom: calc(var(--logo-size) * -0.42) !important; /* how far it overlaps */
-  transform: translateX(-50%) !important;
-  display:block !important;
-  text-decoration:none;
-  z-index:5;
-}
-
-/* nuke any leftover circle or badge layers */
-.brand::before,
-.brand-badge,
-.brand-badge::before{ content:none !important; display:none !important; }
-
-/* show only the mark */
-.brand-text, .brand-name, .brand-tagline{ display:none !important; }
-
-/* the actual SVG */
-.brand img{
-  width: var(--logo-size) !important;
-  height: auto !important;
-  display:block !important;
-  object-fit: contain;
-  filter: drop-shadow(0 6px 24px rgba(0,0,0,.25));
-  transform-origin: center center;
-  animation: vvLogoPulse 6s ease-in-out infinite; /* gentle pulse */
-}
-
-/* IMPORTANT: only scale here (do NOT change translate) */
-@keyframes vvLogoPulse{
-  0%,100%{ transform: scale(1); opacity: 1; }
-  50%    { transform: scale(1.04); opacity: .97; }
-}
-
-/* give the hero enough top space so the logo doesn't collide */
-.hero{
-  padding-top: calc(120px + var(--logo-size) * 0.55) !important;
-}
-
-/* if a mobile menu still exists, hide it (we don't need it now) */
-.menu-toggle, .site-nav{ display:none !important; }
-/* Force logo visible and above everything */
-.nav-header   { overflow: visible; }
-.nav-container{ position: relative; }
-.brand        { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--logo-size)*-0.5); z-index: 10; }
-.brand::before{ content: none !important; }        /* nuke old circle if any */
-.brand img    { position: relative; z-index: 11; display: block !important; width: var(--logo-size) !important; height: auto !important; opacity: 1 !important; }
