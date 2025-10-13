@@ -15,74 +15,73 @@
   <meta property="og:image" content="assets/images/logo.jpg" />
   <link rel="icon" href="assets/images/veteran-verify-logo.png" />
 
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css" />
   <style>
-  /* ========= Header (brand only, no circle or menu) ========= */
-  :root{
-    --logo-size: clamp(180px, 26vw, 340px);
-  }
-  .nav-header{
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background: transparent;
-    box-shadow: none;
-  }
-  .nav-container{
-    height: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-  }
-  .brand{
-    position: absolute;
-    left: 50%;
-    bottom: calc(var(--logo-size) * -0.4);
-    transform: translateX(-50%);
-    display: grid;
-    place-items: center;
-    text-decoration: none;
-  }
-  .brand img{
-    width: var(--logo-size);
-    height: auto;
-    display: block;
-    object-fit: contain;
-    filter: drop-shadow(0 6px 24px rgba(0,0,0,.25));
-    animation: logoPulse 6s ease-in-out infinite;
-  }
-  @keyframes logoPulse{
-    0%,100%{ transform: translateX(-50%) scale(1); opacity:1; }
-    50%{ transform: translateX(-50%) scale(1.04); opacity:.95; }
-  }
+    /* ==============================
+       LOGO — centered, pulsing, no circle
+       ============================== */
+    :root {
+      --logo-size: clamp(180px, 26vw, 340px);
+    }
 
-  /* Hide unused elements */
-  .site-nav, .menu-toggle, .brand-text {display:none!important;}
+    .nav-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: transparent;
+      box-shadow: none;
+    }
 
-  /* ========== Page basics ========== */
-  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#fff;color:#0b2f83;}
-  .hero{
-    background: linear-gradient(180deg,#ffffff 0%,#0b2f83 60%);
-    text-align:left;
-    padding:200px 20px 60px;
-    color:#fff;
-  }
-  .hero h1{font-size:1.9rem;line-height:1.3;margin:12px 0;}
-  .hero p{max-width:600px;}
-  .cta-card{
-    background:#fff;color:#000;border-radius:18px;padding:20px;margin-top:30px;
-    box-shadow:0 10px 30px rgba(0,0,0,.1);
-  }
-  .cta-card input,.cta-card textarea{
-    width:100%;padding:10px;margin-top:4px;margin-bottom:10px;
-    border-radius:8px;border:1px solid #ccc;font-size:1rem;
-  }
-  .cta-card button{
-    background:#0b2f83;color:#fff;border:0;padding:12px 18px;
-    border-radius:10px;font-size:1rem;cursor:pointer;
-  }
-  .cta-card button:hover{opacity:.9;}
-  footer{text-align:center;padding:40px 0;font-size:.9rem;background:#0b2f83;color:#fff;}
+    .nav-container {
+      position: relative;
+      height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand {
+      position: absolute;
+      left: 50%;
+      bottom: calc(var(--logo-size) * -0.45);
+      transform: translateX(-50%);
+      z-index: 5;
+      display: block;
+    }
+
+    .brand::before { content: none !important; }
+
+    .brand img {
+      width: var(--logo-size);
+      height: auto;
+      display: block;
+      object-fit: contain;
+      filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.25));
+      transform-origin: center;
+      animation: vvLogoPulse 6s ease-in-out infinite;
+    }
+
+    @keyframes vvLogoPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.04); opacity: 0.97; }
+    }
+
+    .brand-text, .brand-name, .brand-tagline {
+      display: none !important;
+    }
+
+    /* hide nav menu lines visually but keep HTML accessible */
+    .menu-toggle {
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* hero padding so logo overlaps correctly */
+    .hero {
+      padding-top: calc(120px + var(--logo-size) * 0.55);
+    }
   </style>
 </head>
 
@@ -90,9 +89,19 @@
   <!-- HEADER -->
   <header class="nav-header" role="banner">
     <div class="nav-container">
-      <a class="brand" href="/" aria-label="Veteran Verify home">
-        <img src="/assets/images/vv-eagle-logo-3.svg" alt="Veteran Verify logo" />
+      <a class="brand" href="/">
+        <img src="/assets/images/vv-eagle-logo.svg" alt="Veteran Verify" />
       </a>
+
+      <button class="menu-toggle" aria-controls="site-nav" aria-expanded="false">
+        ☰
+      </button>
+
+      <nav id="site-nav" class="site-nav" aria-label="Primary">
+        <a href="#join">Join Waitlist</a>
+        <a href="#mission">Our Mission</a>
+        <a href="#contact">Contact</a>
+      </nav>
     </div>
   </header>
 
@@ -107,11 +116,10 @@
         </div>
 
         <div class="cta-card" aria-labelledby="join">
-          <h2 id="join" style="margin:0 0 8px 0;">Join the early access list</h2>
+          <h2 id="join" style="margin:0 0 8px 0; font-size:1.25rem;">Join the early access list</h2>
           <div id="form-success" class="success" role="status" aria-live="polite">Thanks—you're on the list! We’ll email you with next steps.</div>
 
-          <form id="signup" name="vv-waitlist" method="POST" netlify data-netlify="true"
-            netlify-honeypot="bot-field" accept-charset="UTF-8" action="/thank-you/">
+          <form id="signup" name="vv-waitlist" method="POST" netlify data-netlify="true" netlify-honeypot="bot-field" accept-charset="UTF-8">
             <input type="hidden" name="form-name" value="vv-waitlist" />
             <p style="display:none;"><label>Don’t fill this out: <input name="bot-field" autocomplete="off" /></label></p>
 
@@ -129,9 +137,9 @@
             <div>
               <label>I'm a…</label>
               <div class="roles" role="group" aria-label="Role">
-                <label><input type="checkbox" name="role[]" value="Veteran" /> Veteran</label>
-                <label><input type="checkbox" name="role[]" value="Vendor" /> Vendor / Business</label>
-                <label><input type="checkbox" name="role[]" value="Both" /> Both</label>
+                <label class="pill"><input type="checkbox" name="role[]" value="Veteran" /> Veteran</label>
+                <label class="pill"><input type="checkbox" name="role[]" value="Vendor" /> Vendor / Business</label>
+                <label class="pill"><input type="checkbox" name="role[]" value="Both" /> Both</label>
               </div>
             </div>
 
@@ -151,22 +159,42 @@
               <textarea id="msg" name="message" placeholder="Tell us what would make this valuable for you."></textarea>
             </div>
 
-            <label class="fineprint">
-              <input type="checkbox" name="updates" value="yes" /> Send me product updates and pilot invites.
-            </label>
+            <label class="fineprint"><input type="checkbox" name="updates" value="yes" /> Send me product updates and pilot invites.</label>
 
-            <button type="submit">Request Early Access</button>
+            <button class="btn" type="submit">Request Early Access</button>
             <p class="fineprint">We’ll only use your email for Veteran Verify updates. You can unsubscribe anytime.</p>
           </form>
         </div>
       </div>
     </section>
+
+    <section class="section" id="mission">
+      <div class="container">
+        <div class="grid-3">
+          <div class="feature">
+            <h3>Private by design</h3>
+            <p>We collect the minimum needed and never share data without consent. Verification should protect—never expose.</p>
+          </div>
+          <div class="feature">
+            <h3>Frictionless for vendors</h3>
+            <p>Simple checks, fast onboarding, and APIs that slot into your checkout flow or point-of-sale.</p>
+          </div>
+          <div class="feature">
+            <h3>Built with veterans</h3>
+            <p>We’re co-developing with the community to keep the process respectful, fair, and accessible.</p>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
-  <footer>© <span id="yr"></span> VeteranVerify.net — All rights reserved.</footer>
+  <footer id="contact">© <span id="yr"></span> VeteranVerify.net — All rights reserved.</footer>
 
   <script>
-    document.getElementById('yr').textContent = new Date().getFullYear();
+    (function(){
+      const y = document.getElementById('yr');
+      if (y) y.textContent = new Date().getFullYear();
+    })();
   </script>
 </body>
 </html>
