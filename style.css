@@ -276,3 +276,74 @@ footer{
   z-index: 0;
   padding-top: calc(120px + var(--logo-size) * 0.55) !important;
 }
+/* =========================
+   V V  LOGO + HERO LAYOUT
+   Single source of truth
+   ========================= */
+
+/* Pulse (kept external so HTML is clean) */
+@keyframes vvLogoPulse{
+  0%,100%{ transform: scale(1); opacity:1; }
+  50%    { transform: scale(1.04); opacity:.97; }
+}
+
+/* Header shouldn’t pin; keeps logo from clipping at the top */
+.nav-header{
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Space above hero to anchor the overhang */
+.nav-container{
+  height: 180px !important; /* tweak if you need a bit more/less */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* Centered logo that overhangs into the hero */
+.brand{
+  position: absolute !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  bottom: calc(var(--logo-size) * -0.70) !important;  /* LOWER logo into blue */
+  z-index: 2 !important;
+  text-decoration: none; color: inherit;
+}
+.brand::before{ content:none !important; }
+
+.brand img{
+  width: var(--logo-size);
+  height: auto;
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 24px rgba(12,20,36,.22));
+  transform-origin: center center;
+  animation: vvLogoPulse 6s ease-in-out infinite;
+  transition: filter .35s ease, transform .35s ease;
+}
+.brand:hover img{
+  filter:
+    drop-shadow(0 0 12px rgba(33,98,255,.45))
+    drop-shadow(0 0 24px rgba(33,98,255,.25));
+  transform: scale(1.05);
+}
+
+/* Make sure hero content clears the lowered logo */
+.hero{
+  position: relative;
+  z-index: 0;
+  padding-top: calc(160px + var(--logo-size) * 0.82) !important;
+}
+
+/* Optional: mobile/medium tweaks so overlap scales nicely */
+@media (max-width: 900px){
+  .nav-container{ height: 160px !important; }
+  .brand{ bottom: calc(var(--logo-size) * -0.64) !important; }
+  .hero{  padding-top: calc(150px + var(--logo-size) * 0.76) !important; }
+}
+
+/* Hide nav UI for now */
+.brand-text, .brand-name, .brand-tagline{ display:none !important; }
+.site-nav, .menu-toggle{ display:none !important; }
