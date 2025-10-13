@@ -42,110 +42,79 @@ h1{margin:0; font-size:clamp(2rem,4vw,3rem); line-height:1.1; font-weight:900}
 }
 
 /* ===========
-   Header (brand + nav) — centered SVG, no circle
+   Header (brand only — no nav/menu)
    =========== */
 
 /* knobs */
 :root{
-  --logo-size: clamp(180px, 26vw, 380px);   /* overall SVG size */
-  --nav-navy:  #0b2f83;
-  --nav-grad:  linear-gradient(180deg, #0e3f8f 0%, #0a2f71 100%);
+  --badge-size: clamp(200px, 24vw, 320px);
+  --logo-pct: 86%;
+  --nav-navy: #0b2f83;
 }
 
 .nav-header{
   position: sticky;
   top: 0;
   z-index: 100;
-  background: #fff;                         /* white strip for overlap */
+  background:#fff;
   color: var(--nav-navy);
   box-shadow: 0 2px 10px rgba(12,20,36,.12);
   overflow: visible;
 }
 
-/* container anchors the absolute brand */
+/* container now just centers the brand */
 .nav-container{
-  max-width: 1200px;
-  margin: 0 auto;
-  height: 80px;                             /* a bit taller to breathe */
-  padding: 0 clamp(16px,5vw,40px);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: relative;
+  max-width:1200px;
+  margin:0 auto;
+  height:80px;
+  padding:0 clamp(16px,5vw,40px);
+  display:flex;
+  align-items:center;
+  justify-content:center;     /* center since there’s no nav */
+  position:relative;
 }
 
-/* center the SVG and hang it into the hero */
+/* center badge and hang into hero */
 .brand{
-  position: absolute;
-  left: 50%;
-  bottom: calc(var(--logo-size) * -0.50);   /* half in hero, half in header */
-  transform: translateX(-50%);
-  text-decoration: none;
-  color: inherit;
-  display: grid;
-  place-items: center;
-  z-index: 5;
+  position:absolute;
+  left:50%;
+  bottom: calc(var(--badge-size) * -0.50);
+  transform:translateX(-50%);
+  display:grid; place-items:center;
+  text-decoration:none; color:inherit;
+  z-index:10;
 }
 
-/* kill any old circle layer if present */
-.brand::before{ content: none !important; }
+/* circular badge behind the SVG */
+.brand::before{
+  content:"";
+  width:var(--badge-size);
+  height:var(--badge-size);
+  border-radius:50%;
+  background:#fff;
+  box-shadow:
+    0 0 0 3px rgba(255,255,255,.98),
+    0 8px 24px rgba(12,20,36,.28);
+}
 
-/* transparent SVG (e.g. /assets/images/vv-eagle-logo.svg) */
+/* transparent SVG logo */
 .brand img{
-  width: var(--logo-size) !important;       /* override any legacy height rules */
-  height: auto !important;
-  display: block;
-  object-fit: contain;
-  filter: drop-shadow(0 8px 24px rgba(12,20,36,.24)); /* subtle lift */
+  position:absolute;
+  width:var(--logo-pct);
+  height:auto;
+  display:block;
+  object-fit:contain;
 }
 
-/* hide the text block in the header (using the mark only) */
-.brand-text,
-.brand-name,
-.brand-tagline{ display:none !important; }
+/* hide any leftover brand text */
+.brand-text, .brand-name, .brand-tagline{ display:none !important; }
 
-/* nav links */
-.site-nav{ display:flex; align-items:center; gap:22px; }
-.site-nav a{
-  color: var(--nav-navy);
-  text-decoration:none;
-  font-weight:700;
-  padding:6px 4px;
-  border-radius:6px;
-}
-.site-nav a:hover{ text-decoration:underline; }
-.btn-small{
-  background: var(--blue,#2162ff);
-  color:#fff; border:none; border-radius:10px; padding:10px 12px;
-}
+/* completely remove nav + hamburger if they exist */
+.site-nav, .menu-toggle{ display:none !important; }
 
-/* mobile menu */
-.menu-toggle{
-  display:inline-block;
-  background:transparent;
-  color:var(--nav-navy);
-  border:0;
-  font-size:1.35rem;
-  line-height:1;
-  cursor:pointer;
-}
-
-/* dropdown on small screens */
-@media (max-width:860px){
-  .site-nav{
-    position:absolute; right:16px; top:72px;
-    background:#0b2f83; border:1px solid rgba(255,255,255,.15);
-    box-shadow:0 10px 30px rgba(12,20,36,.18);
-    border-radius:12px; padding:10px; display:none;
-    flex-direction:column; gap:6px; min-width:200px;
-  }
-  .site-nav a{ color:#fff; padding:10px 12px; }
-  .site-nav.show{ display:flex; }
-}
-
-/* scale up a touch more on wide screens (optional) */
+/* desktop upscale (optional) */
 @media (min-width:900px){
-  :root{ --logo-size: clamp(220px, 28vw, 440px); }
+  :root{ --badge-size: clamp(240px, 26vw, 360px); --logo-pct: 88%; }
 }
 
 /* ===========
