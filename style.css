@@ -361,7 +361,7 @@ footer{
 
 /* 3) Reduce space above the headline */
 .hero{
-  padding-top: calc(110px + var(--logo-size) * 0.35) !important; /* was ~0.82 */
+  padding-top: calc(110px + var(--logo-size) * 0.25) !important; /* was ~0.82 */
 }
 
 /* Responsive tune so it still looks right on small screens */
