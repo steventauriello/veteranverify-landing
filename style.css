@@ -255,3 +255,24 @@ footer{
 }
   .brand{ bottom: calc(var(--logo-size) * -0.46); }
 }
+/* === Make logo scroll with the page (not sticky) === */
+.nav-header{
+  position: relative !important;   /* was: sticky */
+  z-index: 1 !important;           /* keep above the hero only at top */
+}
+
+/* Keep the centered/overhang behavior without pinning */
+.brand{
+  position: absolute !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  bottom: calc(var(--logo-size) * -0.42) !important; /* overlap amount */
+  z-index: 2 !important;
+}
+
+/* Ensure hero sits under the logo initially, then scrolls cleanly */
+.hero{ 
+  position: relative; 
+  z-index: 0;
+  padding-top: calc(120px + var(--logo-size) * 0.55) !important;
+}
