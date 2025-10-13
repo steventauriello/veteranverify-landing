@@ -15,88 +15,20 @@
   <meta property="og:image" content="assets/images/logo.jpg" />
   <link rel="icon" href="assets/images/vv-eagle-logo-3.svg" />
 
-  <!-- Styles -->
+  <!-- One source of truth for visuals -->
   <link rel="stylesheet" href="style.css" />
-  <style>
-    /* ==============================
-       LOGO — centered, pulsing, no circle
-       ============================== */
-    :root {
-      --logo-size: clamp(180px, 26vw, 340px);
-    }
-
-    .nav-header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: transparent;
-      box-shadow: none;
-    }
-
-    .nav-container {
-      position: relative;
-      height: 140px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .brand {
-      position: absolute;
-      left: 50%;
-      bottom: calc(var(--logo-size) * -0.30);
-      transform: translateX(-50%);
-      z-index: 5;
-      display: block;
-    }
-
-    .brand::before { content: none !important; }
-
-    .brand img {
-      width: var(--logo-size);
-      height: auto;
-      display: block;
-      object-fit: contain;
-      filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.25));
-      transform-origin: center;
-      animation: vvLogoPulse 6s ease-in-out infinite;
-    }
-
-    @keyframes vvLogoPulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.04); opacity: 0.97; }
-    }
-
-    .brand-text, .brand-name, .brand-tagline {
-      display: none !important;
-    }
-
-    /* hide nav menu lines visually but keep HTML accessible */
-    .menu-toggle {
-      visibility: hidden;
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    /* hero padding so logo overlaps correctly */
-    .hero {
-      padding-top: calc(120px + var(--logo-size) * 0.42);
-    }
-  </style>
 </head>
 
 <body>
   <!-- HEADER -->
   <header class="nav-header" role="banner">
     <div class="nav-container">
-      <a class="brand" href="/">
+      <a class="brand" href="/" aria-label="Veteran Verify">
         <img src="/assets/images/vv-eagle-logo-3.svg" alt="Veteran Verify" />
       </a>
 
-      <button class="menu-toggle" aria-controls="site-nav" aria-expanded="false">
-        ☰
-      </button>
-
+      <!-- Keep nav markup (hidden by CSS for now) -->
+      <button class="menu-toggle" aria-controls="site-nav" aria-expanded="false">☰</button>
       <nav id="site-nav" class="site-nav" aria-label="Primary">
         <a href="#join">Join Waitlist</a>
         <a href="#mission">Our Mission</a>
@@ -121,7 +53,7 @@
 
           <form id="signup" name="vv-waitlist" method="POST" netlify data-netlify="true" netlify-honeypot="bot-field" accept-charset="UTF-8">
             <input type="hidden" name="form-name" value="vv-waitlist" />
-            <p style="display:none;"><label>Don’t fill this out: <input name="bot-field" autocomplete="off" /></label></p>
+            <p class="sr-only"><label>Don’t fill this out: <input name="bot-field" autocomplete="off" /></label></p>
 
             <div class="row">
               <div>
