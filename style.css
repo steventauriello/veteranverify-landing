@@ -347,17 +347,3 @@ footer{
 /* Hide nav UI for now */
 .brand-text, .brand-name, .brand-tagline{ display:none !important; }
 .site-nav, .menu-toggle{ display:none !important; }
-/* === OPTION B: pull hero up to cover header space === */
-/* Match these to your current .nav-container heights */
-.hero{
-  margin-top: -180px;  /* cover the header space */
-  padding-top: calc(160px + var(--logo-size) * 0.82 + 180px) !important;
-}
-
-/* Keep it proportional on smaller screens */
-@media (max-width: 900px){
-  .hero{
-    margin-top: -160px;  /* match the smaller header */
-    padding-top: calc(150px + var(--logo-size) * 0.76 + 160px) !important;
-  }
-}
