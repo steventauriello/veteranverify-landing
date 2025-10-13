@@ -126,7 +126,7 @@ export async function handler(event) {
     const first_name = fullName ? fullName.split(/\s+/)[0] : (payload.first_name || null);
     const last_name  = fullName ? (fullName.split(/\s+/).slice(1).join(" ") || null) : (payload.last_name || null);
 
-    const email = String(payload.email || "").trim();
+   const email = String(payload.email || "").trim().toLowerCase();
     if (!isEmail(email) || email.toLowerCase() === "you@example.com") {
       log("invalid email:", email);
       return { statusCode: 400, headers: cors, body: "Invalid email" };
