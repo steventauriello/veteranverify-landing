@@ -347,3 +347,8 @@ footer{
 /* Hide nav UI for now */
 .brand-text, .brand-name, .brand-tagline{ display:none !important; }
 .site-nav, .menu-toggle{ display:none !important; }
+/* Pull hero up so no white shows above it */
+.hero{
+  margin-top: -180px;  /* same as .nav-container height */
+  padding-top: calc(160px + var(--logo-size) * 0.82 + 180px) !important; 
+}
