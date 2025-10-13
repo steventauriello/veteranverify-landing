@@ -13,7 +13,7 @@ console.log("[signup] ENV CHECK:", {
   db_ok: !!process.env.SUPABASE_DB_URL
 });
 
-const TABLE = "signups";
+const TABLE = "veteran_verify_signups";
 const ALLOWED_ORIGINS = [
   "https://veteranverify.netlify.app",
   "https://veteranverify.net",
