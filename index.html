@@ -18,34 +18,22 @@
   <link rel="icon" href="assets/images/veteran-verify-logo.png" />
 
   <!-- Styles -->
- <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
   <!-- HEADER -->
   <header class="nav-header" role="banner">
     <div class="nav-container">
-     <a class="brand" href="/">
-  <span class="brand-badge">
-    <img src="/assets/images/vv-eagle-logo-3.svg" alt="Veteran Verify" />
-  </span>
-  <span class="brand-text" aria-hidden="true">
-    <span class="brand-name">Veteran Verify</span>
-    <span class="brand-tagline">Trusted Veteran Verification</span>
-  </span>
-</a>
-
-      <button class="menu-toggle" aria-controls="site-nav" aria-expanded="false">
-        <span class="sr-only">Toggle menu</span>
-        ☰
-      </button>
-
-      <nav id="site-nav" class="site-nav" aria-label="Primary">
-        <a href="#join">Join Waitlist</a>
-        <a href="#mission">Our Mission</a>
-        <a href="#contact">Contact</a>
-        <a class="btn btn-small" href="#join">Request Access</a>
-      </nav>
+      <!-- Centered brand logo (no menu) -->
+      <a class="brand" href="/" aria-label="Veteran Verify home">
+        <img src="/assets/images/vv-eagle-logo-3.svg" alt="Veteran Verify" class="logo-pulse" />
+      </a>
+      <!-- brand text kept for a11y (hidden by CSS) -->
+      <span class="brand-text" aria-hidden="true">
+        <span class="brand-name">Veteran Verify</span>
+        <span class="brand-tagline">Trusted Veteran Verification</span>
+      </span>
     </div>
   </header>
 
@@ -150,15 +138,10 @@
 
   <!-- Scripts -->
   <script>
+    // Footer year
     (function(){
-      const btn = document.querySelector('.menu-toggle');
-      const nav = document.getElementById('site-nav');
-      if(!btn || !nav) return;
-      btn.addEventListener('click', () => {
-        const open = nav.classList.toggle('show');
-        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-      });
-      const y = document.getElementById('yr'); if(y) y.textContent = new Date().getFullYear();
+      const y = document.getElementById('yr');
+      if (y) y.textContent = new Date().getFullYear();
     })();
   </script>
 
