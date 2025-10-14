@@ -583,7 +583,7 @@ body.policy .hero, body.policy .hero::before{ padding:0 !important; background:t
 body.policy .policy-wrap{ max-width:880px; margin:0 auto; padding:36px 20px 64px; }
 /* PRIVACY PAGE — move logo down (and left/right if needed) */
 body.policy{
-  --policy-logo-top: 85px;      /* ↑ bigger = farther DOWN (try 60–120px) */
+  --policy-logo-top: 95px;      /* ↑ bigger = farther DOWN (try 60–120px) */
   --policy-logo-shift-x: 0px;   /* ← / → nudge (e.g. -8px or 12px) */
 }
 /* HOMEPAGE — tighten header & bring content up */
