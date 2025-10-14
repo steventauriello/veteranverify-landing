@@ -5,34 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Privacy Policy — Veteran Verify</title>
 
-  <meta name="description" content="How Veteran Verify protects your data and privacy. What we collect, how we use it, when we share it, and your choices." />
+  <meta name="description" content="Veteran Verify privacy policy: what we collect, how we use it, how we secure it, and your choices." />
   <link rel="canonical" href="https://veteranverify.net/privacy" />
   <link rel="icon" href="/assets/images/vv-eagle-logo-3.svg" />
   <link rel="stylesheet" href="/style.css" />
 
-  <!-- Page-scoped polish only (keeps global CSS clean) -->
+  <!-- Page-specific polish (keeps your global CSS untouched) -->
   <style>
-    /* keep content narrow and comfy */
-    .policy-wrap{max-width:880px;margin:0 auto;padding:36px 20px 64px}
-    .policy-wrap h1{margin:12px 0 8px;line-height:1.15}
-    .policy-wrap h2{margin-top:28px;font-size:1.25rem}
-    .policy-wrap p{margin:.6rem 0; color:#445069}
-    .policy-wrap ul{margin:.4rem 0 .8rem 1.15rem}
-    .pill-note{display:inline-block;background:#e8f1ff;border:1px solid #cfe0ff;color:#0b2f83;border-radius:999px;padding:6px 12px;font-weight:700}
-    .toc a{color:#0d3d8c;text-decoration:none}
-    .toc a:hover{text-decoration:underline}
-    /* “Real Talk” intro card */
-    .card{background:#fff;border:1px solid #e7ecf3;border-radius:14px;padding:18px}
-    .real-talk h3{margin:.2rem 0 .25rem 0; font-size:1.1rem}
-    .real-talk p{margin:.55rem 0}
-    .muted{color:#6b778c}
+    .policy-wrap { max-width: 880px; margin: 0 auto; padding: 36px 20px 64px; }
+    .policy-wrap h1 { margin: 12px 0 8px; line-height: 1.15; }
+    .policy-wrap h2 { margin-top: 28px; font-size: clamp(1.25rem, 2.6vw, 1.6rem); }
+    .policy-wrap h3 { margin-top: 22px; font-size: clamp(1.05rem, 2vw, 1.25rem); }
+    .policy-wrap p  { margin: .6rem 0; color: #44526b; }
+    .policy-wrap ul { margin: .4rem 0 .8rem 1.1rem; }
+    .pill-note { display:inline-block; background:#e8f1ff; color:#0b2f83; border-radius:999px; padding:6px 12px; font-weight:700; }
+    .muted { color:#69758a; }
+    .toc a{ color:#0d3d8c; text-decoration:none; }
+    .toc a:hover{ text-decoration:underline; }
+    .card{ background:#fff; border:1px solid #e7ecf3; border-radius:14px; padding:18px; }
   </style>
 </head>
 
+<!-- IMPORTANT: body.policy keeps the home-page logo behavior untouched -->
 <body class="policy">
-  <!-- HEADER (re-uses your global header markup; scoped by .policy in style.css) -->
+  <!-- Simple header reuse -->
   <header class="nav-header" role="banner">
-    <div class="nav-container">
+    <div class="nav-container" style="height:auto; padding:12px 20px; justify-content:center;">
       <a class="brand" href="/" aria-label="Veteran Verify">
         <img src="/assets/images/vv-eagle-logo-3.svg" alt="Veteran Verify" />
       </a>
@@ -41,109 +39,157 @@
 
   <main>
     <div class="policy-wrap">
-
       <span class="pill-note">Privacy Policy</span>
       <h1>We protect your data like it’s our own</h1>
-      <p class="muted">
-        Effective date: <strong>October 14, 2025</strong> • Version 1.0
+      <p class="muted">Effective date: <strong>October 14, 2025</strong> • Version 1.0</p>
+
+      <p>
+        Veteran Verify is building a faster, simpler way for veterans to privately prove service —
+        and for vendors to verify eligibility without friction. Privacy and security are foundational
+        to that mission. This policy explains what we collect, how we use it, how we secure it, and
+        the choices you have.
       </p>
 
-      <!-- REAL TALK INTRO (your voice, preserved) -->
-      <section class="card real-talk" aria-labelledby="real-talk-title">
-        <h3 id="real-talk-title">❤️ The Real Talk</h3>
-        <p><strong>Hello, you beautiful soul who actually clicked on the Privacy Policy.</strong> You’re either very curious or very smart — maybe both. Either way, thank you for being here and taking the time to read something most people skip.</p>
-        <p>Before we dive into the formal stuff, I want to tell you what’s really going on here — human to human.</p>
-        <p>I’m building <strong>Veteran Verify</strong> for one reason: to create a better system for veterans, vendors, and yes, veteran-owned vendors, too. The idea was born after a large verification company told me my shop was <em>“too small”</em> to work with. That moment lit a fire. Instead of doing nothing, I decided to build something better — a platform that doesn’t play gatekeeper with data, opportunities, or trust.</p>
-        <p>These corporations have locked up government data for profit. They’ve wedged themselves between veterans and the benefits they’ve earned — becoming the middlemen of patriotism. That’s not right.</p>
-        <p>So, I started building my own database — from the ground up. Transparent. Secure. Respectful. Built with honesty and AI-strengthened protection.</p>
-        <p>I want veterans to easily prove service, redeem discounts, and access benefits <em>without</em> having to dig up DD-214s, flash military IDs, or explain themselves every time they want a small token of appreciation for serving this country.</p>
-        <p>You’re trusting me with your data, and that means everything to me. I’m not a faceless corporation. I’m a small team using the best AI tools available. We use advanced encryption and multi-layered cybersecurity — but more importantly, we lead with integrity.</p>
-        <p>Locks are for honest people. No database in the world is <em>completely</em> impenetrable, and anyone who says otherwise is lying. So here’s my promise: <strong>your trust will never be taken for granted.</strong> We’ll do everything in our power to protect what you share with us — because this project only works if there’s faith between us.</p>
-        <p>By submitting your information, you’re helping us build something bigger than any one company — a tool for veterans, built by those who actually care. This is about fairness, freedom, and taking back control from the few who think they own access to what belongs to all of us.</p>
-        <p class="muted">Below are the formal details of our privacy policy.</p>
+      <!-- Real Talk / Plain-English preface -->
+      <section class="card" id="real-talk">
+        <h2>Real talk — why this matters</h2>
+        <p>
+          Hey — you actually clicked the Privacy Policy. That means you’re curious, smart, or both.
+          Either way, thanks for reading what I wrote with veterans in mind.
+        </p>
+        <p>
+          The short version: I’m trying to build something better for veterans and vendors. Too many
+          “gatekeeper” companies gained access to government data and now keep it behind lock and key.
+          They decide who gets to integrate and how much it costs — and those costs roll downhill to
+          small shops and, ultimately, to customers.
+        </p>
+        <p>
+          Veteran Verify is our workaround: a more private, more respectful, more secure way to verify
+          service — without forcing veterans to hand over sensitive documents at every checkout or create
+          yet another account. When you share info with us, you’re doing it voluntarily and with trust.
+          We take that seriously. No system is 100% impenetrable, and anyone who tells you otherwise isn’t
+          being straight. What we <em>can</em> promise is to use modern security best practices, keep data
+          collection to the minimum necessary, and continuously improve.
+        </p>
       </section>
 
-      <!-- SHORT MISSION LINE (keeps your original blurb) -->
-      <p>
-        Veteran Verify is building a faster, simpler way for veterans to privately prove service — and for vendors to verify eligibility without friction. Privacy and security are foundational to that mission.
-      </p>
+      <!-- NEW: Why I started Veteran Verify (added per your request) -->
+      <section class="card" id="why-started">
+        <h2>Why I started Veteran Verify</h2>
+        <p>
+          This project began with <strong>Freedom Crate Co.</strong> — my shop where I build wooden ammo boxes,
+          keepsakes, and range crates. I run a <strong>veteran-only giveaway</strong> and needed a simple,
+          private way to confirm entries truly came from veterans.
+        </p>
+        <p>
+          When I asked the big verification providers for help, I was told my business was
+          <em>“too small.”</em> That didn’t sit right. So I started building a system that any veteran could
+          use and any vendor could drop into their site — no gatekeeping, no inflated fees, and no invasive
+          data grabs.
+        </p>
+        <p>
+          Veteran Verify is the result: a respectful way to prove service quickly and privately — so veterans
+          can access giveaways, discounts, and benefits without jumping through hoops.
+        </p>
+      </section>
 
-      <!-- TOC -->
-      <div class="card toc" aria-label="On this page">
-        <strong>On this page:</strong>
+      <!-- Table of contents -->
+      <section class="toc card" aria-labelledby="toc">
+        <h2 id="toc">On this page</h2>
         <ul>
-          <li><a href="#what-we-collect">What we collect</a></li>
-          <li><a href="#how-we-use">How we use your data</a></li>
-          <li><a href="#when-we-share">When we share data</a></li>
+          <li><a href="#collect">What we collect</a></li>
+          <li><a href="#use">How we use your data</a></li>
+          <li><a href="#share">When we share data</a></li>
           <li><a href="#security">How we secure your data</a></li>
           <li><a href="#retention">Data retention</a></li>
           <li><a href="#choices">Your choices &amp; rights</a></li>
-          <li><a href="#transfers">International transfers</a></li>
+          <li><a href="#cookies">Cookies</a></li>
+          <li><a href="#intl">International transfers</a></li>
           <li><a href="#changes">Changes to this policy</a></li>
           <li><a href="#contact">Contact us</a></li>
         </ul>
-      </div>
-
-      <!-- SECTIONS -->
-      <section id="what-we-collect">
-        <h2>What we collect</h2>
-        <p>Information you provide directly (e.g., name, email, role like Veteran or Vendor, optional organization/state, and any message you share). We also receive limited technical data such as IP address and user-agent for security and abuse prevention.</p>
       </section>
 
-      <section id="how-we-use">
-        <h2>How we use your data</h2>
+      <!-- Standard sections (kept concise; same layout you liked) -->
+      <section id="collect">
+        <h2>What we collect</h2>
+        <p>Only what’s needed to operate the service, improve it, and communicate with you:</p>
         <ul>
-          <li>To operate waitlists, pilot programs, and future verification features.</li>
-          <li>To contact you about product updates and pilot invites (only if you opt in).</li>
-          <li>To protect our services, prevent fraud/abuse, and comply with legal obligations.</li>
+          <li><strong>Contact:</strong> name, email (and optional org/state/message from the waitlist form).</li>
+          <li><strong>Context:</strong> role selection (Veteran, Vendor, Both).</li>
+          <li><strong>Technical:</strong> IP and user-agent (captured server-side to help detect abuse and secure the service).</li>
+          <li><strong>Operational logs:</strong> anonymized or aggregated metrics to keep things running.</li>
         </ul>
       </section>
 
-      <section id="when-we-share">
+      <section id="use">
+        <h2>How we use your data</h2>
+        <ul>
+          <li>To provide updates, pilot invites, and service communications you ask for.</li>
+          <li>To secure the platform, prevent fraud/abuse, and debug issues.</li>
+          <li>To improve features, including future verification tools.</li>
+        </ul>
+      </section>
+
+      <section id="share">
         <h2>When we share data</h2>
-        <p>We do not sell your data. We may share limited information with service providers (e.g., hosting, email, analytics) who process it on our behalf under strict contracts. We may disclose information if required by law or to prevent harm or abuse.</p>
+        <ul>
+          <li><strong>Vendors/Processors:</strong> trusted infrastructure (e.g., hosting, storage) under contract and data-processing terms.</li>
+          <li><strong>Legal/Safety:</strong> if required by law or to protect users, our platform, or the public.</li>
+          <li><strong>No selling of personal data.</strong></li>
+        </ul>
       </section>
 
       <section id="security">
         <h2>How we secure your data</h2>
-        <p>We use layered security: encryption in transit (HTTPS), encryption at rest, least-privilege access controls, audit logging, and industry-standard hardening. We continuously improve controls as we grow. No system is perfectly secure, but we commit to best-effort protection and rapid response.</p>
+        <ul>
+          <li>Encryption in transit, strong access controls, least-privilege, and audited logs.</li>
+          <li>Row-Level Security and application-level validation to prevent unauthorized reads/writes.</li>
+          <li>Continuous hardening and monitoring; we fix issues fast.</li>
+        </ul>
+        <p class="muted">
+          No system can guarantee perfect security, but we commit to modern best practices and constant improvement.
+        </p>
       </section>
 
       <section id="retention">
         <h2>Data retention</h2>
-        <p>We keep data only as long as needed for the purposes described above, then delete or de-identify it according to our retention rules and legal requirements.</p>
+        <p>We keep personal data only as long as needed for the purposes above or as required by law, then delete or de-identify it.</p>
       </section>
 
       <section id="choices">
         <h2>Your choices &amp; rights</h2>
         <ul>
-          <li>Opt out of updates anytime (unsubscribe link in emails).</li>
-          <li>Request access, correction, or deletion of your data by contacting us.</li>
-          <li>You can choose not to provide optional fields.</li>
+          <li>Unsubscribe from emails anytime — every message includes a link.</li>
+          <li>Request access, correction, or deletion: email <a href="mailto:privacy@veteranverify.net">privacy@veteranverify.net</a>.</li>
+          <li>We’ll verify the request and respond within a reasonable timeframe.</li>
         </ul>
       </section>
 
-      <section id="transfers">
+      <section id="cookies">
+        <h2>Cookies</h2>
+        <p>We use only what’s necessary to operate the site and improve performance. No third-party ad tracking.</p>
+      </section>
+
+      <section id="intl">
         <h2>International transfers</h2>
-        <p>Our infrastructure may process data in the U.S. and other locations via our service providers. When we transfer data, we use appropriate safeguards.</p>
+        <p>Data may be processed in the United States. By using the site, you consent to that processing.</p>
       </section>
 
       <section id="changes">
         <h2>Changes to this policy</h2>
-        <p>We may update this policy as we improve the product. We’ll update the effective date and, when changes are material, we’ll provide a clear notice.</p>
+        <p>We’ll update this page when we make material changes and revise the “Effective date” above.</p>
       </section>
 
       <section id="contact">
         <h2>Contact us</h2>
-        <p>Questions or requests? Email <a href="mailto:hello@veteranverify.net">hello@veteranverify.net</a>.</p>
+        <p>Email: <a href="mailto:privacy@veteranverify.net">privacy@veteranverify.net</a></p>
+        <p>Mail: Veteran Verify — Privacy, PO Box 1776, USA</p>
       </section>
-
     </div>
   </main>
 
-  <footer id="contact-footer" class="policy-wrap muted" style="text-align:center;">
-    © <span id="yr"></span> VeteranVerify.net — All rights reserved.
-  </footer>
+  <footer id="contact-footer">© <span id="yr"></span> VeteranVerify.net — All rights reserved.</footer>
 
   <script>
     (function(){ var y=document.getElementById('yr'); if(y) y.textContent=new Date().getFullYear(); })();
