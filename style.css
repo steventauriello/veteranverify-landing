@@ -585,7 +585,7 @@ body.policy .policy-wrap{ max-width:880px; margin:0 auto; padding:36px 20px 64px
 body.policy{
   --policy-logo-top: 80px;      /* moves logo itself down */
   --policy-logo-shift-x: 0px;
-  --policy-header-gap: 30px;    /* NEW: adds space below logo */
+  --policy-header-gap: 40px;    /* NEW: adds space below logo */
 }
 
 /* HOMEPAGE — tighten header & bring content up */
