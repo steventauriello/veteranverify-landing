@@ -460,3 +460,40 @@ body.policy .brand {
   transform: none !important;
   position: relative !important;
 }
+/* ==== VV logo positioning knobs (add at END of style.css) ==== */
+
+/* Global defaults (home page) */
+:root{
+  /* Horizontal nudge (positive = right, negative = left) */
+  --logo-shift-x: 0px;
+
+  /* Vertical nudge on home page overlap (positive = farther DOWN into blue) */
+  --logo-shift-y: 0px; /* e.g. 12px or -12px */
+}
+
+/* Home page: keep centered, allow pixel nudges */
+.brand{
+  left: calc(50% + var(--logo-shift-x)) !important;
+  transform: translateX(-50%) !important;
+  /* was bottom: calc(var(--logo-size) * -0.62) */
+  bottom: calc(var(--logo-size) * -0.62 + var(--logo-shift-y)) !important;
+}
+
+/* Privacy page specific knobs */
+body.policy{
+  /* Push the logo down the page (margin-top) */
+  --policy-logo-top: 40px;
+
+  /* Horizontal nudge for privacy page only */
+  --policy-logo-shift-x: 0px;
+}
+
+/* Center the privacy-page logo and allow easy nudges */
+body.policy .brand{
+  position: relative !important;
+  display: block !important;
+  left: calc(50% + var(--policy-logo-shift-x)) !important;
+  transform: translateX(-50%) !important;
+  margin-top: var(--policy-logo-top) !important;
+  margin-bottom: 10px !important;
+}
