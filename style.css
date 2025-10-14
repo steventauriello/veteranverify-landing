@@ -396,3 +396,58 @@ footer{
 @media (prefers-reduced-motion: reduce) {
   .fade-highlight { animation: none; }
 }
+/* ===== Privacy page overrides (scoped) ===== */
+body.policy .nav-header{
+  background: #fff;
+  box-shadow: none;
+  position: relative;
+  padding-top: 8px;
+}
+body.policy .nav-container{
+  height: auto;
+  padding: 12px 20px;
+  justify-content: center;
+}
+
+/* kill hero/overlap/pulse just for privacy page */
+body.policy .brand{
+  position: static !important;
+  transform: none !important;
+  bottom: auto !important;
+  display: inline-flex !important;
+  animation: none !important;
+}
+body.policy .brand::before,
+body.policy .brand::after{
+  display: none !important;
+  content: none !important;
+}
+body.policy .brand img{
+  width: auto !important;
+  height: 60px !important;
+  filter: none !important;
+  animation: none !important;
+}
+
+/* make sure hero fade/spacing doesn’t appear here */
+body.policy .hero::before{ display:none !important; }
+body.policy .hero{ padding: 0 !important; background: transparent !important; }
+body.policy .hero-inner{ display:block; padding:0; }
+
+/* policy content container polish */
+body.policy .policy-wrap{
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 36px 20px 64px;
+}
+body.policy .policy-wrap h1{
+  margin: 12px 0 8px;
+  line-height: 1.15;
+}
+body.policy .policy-wrap .toc{
+  margin: 18px 0 8px;
+}
+
+/* hide site nav/hamburger on privacy page (if any exist) */
+body.policy .menu-toggle,
+body.policy .site-nav{ display:none !important; }
