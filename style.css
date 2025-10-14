@@ -597,3 +597,17 @@ body:not(.policy) .hero{
   /* keep hero clear of the (now higher) logo */
   padding-top: calc(96px + var(--logo-size) * 0.22) !important;
 }
+/* ---- Fineprint contrast + link clarity in the CTA card ---- */
+.cta-card .fineprint{
+  color: #2e3a59;           /* darker ink */
+  opacity: 1 !important;    /* override any inherited fade */
+  margin-top: 10px;
+}
+
+.cta-card .fineprint a{
+  color: #0b2f83;           /* brand navy */
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.cta-card .btn{ margin-bottom: 10px; } /* breathing room above fineprint */
