@@ -497,3 +497,24 @@ body.policy .brand{
   margin-top: var(--policy-logo-top) !important;
   margin-bottom: 10px !important;
 }
+/* === Privacy Page Logo Fix === */
+body.policy .brand {
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  position: relative !important;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 40px;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+body.policy .brand img {
+  width: clamp(160px, 45vw, 260px) !important; /* scales cleanly on mobile */
+  height: auto !important;
+  object-fit: contain;
+  filter: none !important;
+  animation: none !important;
+  transform: none !important;
+}
