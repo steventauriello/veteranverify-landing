@@ -424,7 +424,7 @@ body.policy .brand::after{
 }
 body.policy .brand img{
   width: auto !important;
-  height: 60px !important;
+  height: 100px !important;
   filter: none !important;
   animation: none !important;
 }
