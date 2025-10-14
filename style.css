@@ -581,3 +581,8 @@ body.policy .brand img{
 }
 body.policy .hero, body.policy .hero::before{ padding:0 !important; background:transparent !important; display:none !important; }
 body.policy .policy-wrap{ max-width:880px; margin:0 auto; padding:36px 20px 64px; }
+/* PRIVACY PAGE — move logo down (and left/right if needed) */
+body.policy{
+  --policy-logo-top: 80px;      /* ↑ bigger = farther DOWN (try 60–120px) */
+  --policy-logo-shift-x: 0px;   /* ← / → nudge (e.g. -8px or 12px) */
+}
