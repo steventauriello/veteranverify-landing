@@ -586,3 +586,14 @@ body.policy{
   --policy-logo-top: 80px;      /* ↑ bigger = farther DOWN (try 60–120px) */
   --policy-logo-shift-x: 0px;   /* ← / → nudge (e.g. -8px or 12px) */
 }
+/* HOMEPAGE — tighten header & bring content up */
+body:not(.policy) .nav-container{
+  height: 96px !important;  /* ↓ smaller = header sits higher (try 88–110px) */
+}
+body:not(.policy){
+  --logo-shift-y: -10px;     /* negative lifts the logo UP a bit */
+}
+body:not(.policy) .hero{
+  /* keep hero clear of the (now higher) logo */
+  padding-top: calc(96px + var(--logo-size) * 0.22) !important;
+}
