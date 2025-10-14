@@ -451,3 +451,12 @@ body.policy .policy-wrap .toc{
 /* hide site nav/hamburger on privacy page (if any exist) */
 body.policy .menu-toggle,
 body.policy .site-nav{ display:none !important; }
+/* Move the logo down on the Privacy Policy page */
+body.policy .brand {
+  display: inline-flex !important;
+  justify-content: center;
+  margin-top: 40px;   /* Moves logo down */
+  margin-bottom: 10px;
+  transform: none !important;
+  position: relative !important;
+}
