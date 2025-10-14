@@ -518,3 +518,66 @@ body.policy .brand img {
   animation: none !important;
   transform: none !important;
 }
+/* =========================
+   HOMEPAGE (default) — restore logo layout
+   ========================= */
+body:not(.policy) .nav-header{
+  position: relative !important;
+  z-index: 1 !important;
+}
+body:not(.policy) .nav-container{
+  height: 110px !important;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+body:not(.policy) .brand{
+  position: absolute !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  bottom: calc(var(--logo-size) * -0.62) !important;
+  z-index: 2 !important;
+  text-decoration: none; color: inherit;
+}
+body:not(.policy) .brand::before{ content: none !important; }
+body:not(.policy) .brand img{
+  width: var(--logo-size) !important;
+  height: auto !important;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 24px rgba(12,20,36,.22));
+  transform-origin: center center;
+  animation: vvLogoPulse 6s ease-in-out infinite;
+}
+body:not(.policy) .hero{
+  position: relative; z-index: 0;
+  padding-top: calc(110px + var(--logo-size) * 0.25) !important;
+}
+@media (max-width: 900px){
+  body:not(.policy) .nav-container{ height: 96px !important; }
+  body:not(.policy) .brand{ bottom: calc(var(--logo-size) * -0.54) !important; }
+  body:not(.policy) .hero{  padding-top: calc(96px + var(--logo-size) * 0.58) !important; }
+}
+
+/* =========================
+   PRIVACY PAGE — keep logo centered, not overhanging
+   ========================= */
+body.policy .nav-header{
+  background: #fff; box-shadow: none; position: relative; padding-top: 8px;
+}
+body.policy .nav-container{ height: auto; padding: 12px 20px; justify-content: center; }
+body.policy .brand{
+  display: flex !important;
+  justify-content: center; align-items: center;
+  position: relative !important;
+  left: 50%; transform: translateX(-50%);
+  margin-top: 40px; margin-bottom: 10px;
+  width: 100%;
+  bottom: auto !important;
+}
+body.policy .brand::before, body.policy .brand::after{ display:none !important; content:none !important; }
+body.policy .brand img{
+  width: clamp(160px, 45vw, 260px) !important;
+  height: auto !important; object-fit: contain;
+  filter: none !important; animation: none !important; transform: none !important;
+}
+body.policy .hero, body.policy .hero::before{ padding:0 !important; background:transparent !important; display:none !important; }
+body.policy .policy-wrap{ max-width:880px; margin:0 auto; padding:36px 20px 64px; }
