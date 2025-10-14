@@ -588,7 +588,7 @@ body.policy{
 }
 /* HOMEPAGE — tighten header & bring content up */
 body:not(.policy) .nav-container{
-  height: 96px !important;  /* ↓ smaller = header sits higher (try 88–110px) */
+  height: 100px !important;  /* ↓ smaller = header sits higher (try 88–110px) */
 }
 body:not(.policy){
   --logo-shift-y: -10px;     /* negative lifts the logo UP a bit */
