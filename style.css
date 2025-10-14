@@ -558,66 +558,98 @@ body:not(.policy) .hero{
 }
 
 /* =========================
-   PRIVACY PAGE — keep logo centered, not overhanging
-   ========================= */
-body.policy .nav-header{
-  background: #fff; box-shadow: none; position: relative; padding-top: 8px;
-}
-body.policy .nav-container{
-  height: auto;
-  padding: 36px 20px 24px; /* added more space above logo */
-  justify-content: center;
+/* =====================================================
+   PAGE-SPECIFIC OVERRIDES (put near END of style.css)
+   ===================================================== */
+
+/* ----------------------------
+   HOMEPAGE (default) — KNOBS
+   ---------------------------- */
+:root{
+  /* White header height on home */
+  --home-header-height: 100px;
+
+  /* Logo nudges (home): +right/−left, +down/−up */
+  --home-logo-shift-x: 0px;
+  --home-logo-shift-y: -10px;
+
+  /* How much hero padding accounts for logo overlap */
+  --home-hero-pad-factor: 0.22; /* try 0.18–0.30 */
 }
 
-body.policy .brand{
-  display: flex !important;
-  justify-content: center;
-  align-items: center;
-  position: relative !important;
-  left: 50%;
-  transform: translateX(-50%);
-  margin-top: 40px;              /* controls space between header and logo */
-  margin-bottom: 20px;           /* adds a little gap below the logo */
-  width: 100%;
-  bottom: auto !important;
-}
-body.policy .brand::before, body.policy .brand::after{ display:none !important; content:none !important; }
-body.policy .brand img{
-  width: clamp(160px, 45vw, 260px) !important;
-  height: auto !important; object-fit: contain;
-  filter: none !important; animation: none !important; transform: none !important;
-}
-body.policy .hero, body.policy .hero::before{ padding:0 !important; background:transparent !important; display:none !important; }
-body.policy .policy-wrap{ max-width:880px; margin:0 auto; padding:36px 20px 64px; }
-/* PRIVACY PAGE — move logo down (and left/right if needed) */
-body.policy{
-  --policy-logo-top: 80px;      /* moves logo itself down */
-  --policy-logo-shift-x: 0px;
-  --policy-header-gap: 60px;    /* NEW: adds space below logo */
-}
-
-/* HOMEPAGE — tighten header & bring content up */
+/* Apply homepage knobs */
 body:not(.policy) .nav-container{
-  height: 100px !important;  /* ↓ smaller = header sits higher (try 88–110px) */
+  height: var(--home-header-height) !important;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
 }
-body:not(.policy){
-  --logo-shift-y: -10px;     /* negative lifts the logo UP a bit */
+body:not(.policy) .brand{
+  position: absolute !important;
+  left: calc(50% + var(--home-logo-shift-x)) !important;
+  transform: translateX(-50%) !important;
+  bottom: calc(var(--logo-size) * -0.62 + var(--home-logo-shift-y)) !important;
+  z-index: 2 !important;
+  text-decoration: none; color: inherit;
+}
+body:not(.policy) .brand::before{ content:none !important; }
+body:not(.policy) .brand img{
+  width: var(--logo-size) !important; height:auto !important; object-fit:contain;
 }
 body:not(.policy) .hero{
-  /* keep hero clear of the (now higher) logo */
-  padding-top: calc(96px + var(--logo-size) * 0.22) !important;
-}
-/* ---- Fineprint contrast + link clarity in the CTA card ---- */
-.cta-card .fineprint{
-  color: #2e3a59;           /* darker ink */
-  opacity: 1 !important;    /* override any inherited fade */
-  margin-top: 10px;
+  position: relative; z-index: 0;
+  padding-top: calc(var(--home-header-height) + var(--logo-size) * var(--home-hero-pad-factor)) !important;
 }
 
-.cta-card .fineprint a{
-  color: #0b2f83;           /* brand navy */
-  text-decoration: underline;
-  font-weight: 600;
+/* ----------------------------
+   PRIVACY PAGE — KNOBS
+   ---------------------------- */
+body.policy{
+  /* Space inside white header above the logo */
+  --policy-header-top: 36px;
+
+  /* How far the logo sits below the header (bigger = lower) */
+  --policy-logo-top: 84px;
+
+  /* Gap below logo before the H1 */
+  --policy-header-gap: 28px;
+
+  /* Optional horizontal nudge of logo */
+  --policy-logo-shift-x: 0px;
 }
 
-.cta-card .btn{ margin-bottom: 10px; } /* breathing room above fineprint */
+/* Apply privacy knobs */
+body.policy .nav-header{
+  background:#fff; box-shadow:none; position:relative; padding-top:8px;
+}
+body.policy .nav-container{
+  height:auto !important;
+  padding: var(--policy-header-top) 20px 20px !important; /* top | sides | bottom */
+  justify-content:center !important;
+}
+body.policy .brand{
+  position:relative !important;
+  left: calc(50% + var(--policy-logo-shift-x)) !important;
+  transform: translateX(-50%) !important;
+
+  display:flex !important; justify-content:center !important; align-items:center !important;
+  width:100% !important; bottom:auto !important;
+
+  margin-top: var(--policy-logo-top) !important;
+  margin-bottom: var(--policy-header-gap) !important;
+}
+body.policy .brand::before,
+body.policy .brand::after{ display:none !important; content:none !important; }
+body.policy .brand img{
+  width: clamp(160px, 45vw, 260px) !important;
+  height:auto !important; object-fit:contain !important;
+  filter:none !important; animation:none !important; transform:none !important;
+}
+body.policy .hero, body.policy .hero::before{
+  padding:0 !important; background:transparent !important; display:none !important;
+}
+body.policy .policy-wrap{ max-width:880px; margin:0 auto; padding:36px 20px 64px; }
+
+/* ---- CTA fineprint contrast (home form) ---- */
+.cta-card .fineprint{ color:#2e3a59; opacity:1 !important; margin-top:10px; }
+.cta-card .fineprint a{ color:#0b2f83; text-decoration:underline; font-weight:600; }
+.cta-card .btn{ margin-bottom:10px; }
