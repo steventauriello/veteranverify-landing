@@ -608,10 +608,10 @@ body.policy{
   --policy-header-top: 36px;
 
   /* How far the logo sits below the header (bigger = lower) */
-  --policy-logo-top: 90px;
+  --policy-logo-top: 84px;
 
   /* Gap below logo before the H1 */
-  --policy-header-gap: 40px;
+  --policy-header-gap: 28px;
 
   /* Optional horizontal nudge of logo */
   --policy-logo-shift-x: 0px;
