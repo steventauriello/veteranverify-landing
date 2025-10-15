@@ -571,7 +571,7 @@ body:not(.policy) .hero{
 
   /* Logo nudges (home): +right/−left, +down/−up */
   --home-logo-shift-x: 0px;
-  --home-logo-shift-y: 0px;
+  --home-logo-shift-y: -3px;
 
   /* How much hero padding accounts for logo overlap */
   --home-hero-pad-factor: 0.22; /* try 0.18–0.30 */
