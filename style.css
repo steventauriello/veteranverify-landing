@@ -653,3 +653,50 @@ body.policy .policy-wrap{ max-width:880px; margin:0 auto; padding:36px 20px 64px
 .cta-card .fineprint{ color:#2e3a59; opacity:1 !important; margin-top:10px; }
 .cta-card .fineprint a{ color:#0b2f83; text-decoration:underline; font-weight:600; }
 .cta-card .btn{ margin-bottom:10px; }
+@media (min-width: 1024px) {
+  body:not(.policy) .nav-header { position: relative !important; }
+  body:not(.policy) .nav-container {
+    justify-content: flex-start !important;
+    height: 100px !important;
+  }
+
+  /* Top-left logo on desktop with bounded responsive size */
+  body:not(.policy) .brand {
+    position: absolute !important;
+    top: 24px !important;
+    left: 40px !important;
+    transform: none !important;
+    bottom: auto !important;
+    width: clamp(120px, 12vw, 180px) !important; /* ✅ responsive bounds */
+    z-index: 50 !important;
+  }
+
+  /* Reclaim vertical space since logo moved up/left */
+  body:not(.policy) .hero { padding-top: 140px !important; }
+}
+/* =======================================
+   Desktop logo entrance animation
+   ======================================= */
+@keyframes logoFadeInLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (min-width: 1024px) {
+  body:not(.policy) .brand {
+    position: absolute !important;
+    top: 32px !important;
+    left: -60px !important;
+    width: clamp(120px, 10vw, 160px) !important;
+    transform: none !important;
+    z-index: 50 !important;
+    animation: logoFadeInLeft 0.9s ease-out 0.2s both; /* ✅ fade & slide */
+  }
+
+  body:not(.policy) .hero {
