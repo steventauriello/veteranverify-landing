@@ -567,11 +567,11 @@ body:not(.policy) .hero{
    ---------------------------- */
 :root{
   /* White header height on home */
-  --home-header-height: 100px;
+  --home-header-height: 135px;
 
   /* Logo nudges (home): +right/−left, +down/−up */
   --home-logo-shift-x: 0px;
-  --home-logo-shift-y: -15px;
+  --home-logo-shift-y: 20px;
 
   /* How much hero padding accounts for logo overlap */
   --home-hero-pad-factor: 0.22; /* try 0.18–0.30 */
@@ -611,7 +611,7 @@ body.policy{
   --policy-logo-top: 84px;
 
   /* Gap below logo before the H1 */
-  --policy-header-gap: 28px;
+  --policy-header-gap: -10px;
 
   /* Optional horizontal nudge of logo */
   --policy-logo-shift-x: 0px;
